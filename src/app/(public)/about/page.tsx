@@ -131,15 +131,15 @@ export default function AboutPage() {
           <div className="section-hd">
             <h2>{a.teamTitle}</h2>
           </div>
-          {a.team.length === 1 ? (
-            <TeamCard member={a.team[0]} solo />
-          ) : (
-            <div className="grid-3">
-              {a.team.map((member, i) => (
-                <TeamCard key={i} member={member} />
-              ))}
-            </div>
-          )}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(${Math.min(a.team.length, 3)}, 1fr)`,
+            gap: '24px',
+          }}>
+            {a.team.map((member, i) => (
+              <TeamCard key={i} member={member} solo={a.team.length === 1} />
+            ))}
+          </div>
         </div>
       </section>
     </>

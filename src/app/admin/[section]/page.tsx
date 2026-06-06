@@ -739,7 +739,7 @@ export default function AdminSectionPage({ params }: { params: Promise<{ section
             <span>TPE Admin</span>
             <p>Taiwan Preschool Exchange</p>
           </div>
-          <nav className="a-nav">
+          <div className="a-nav">
             {SECTIONS.map(s => (
               <a
                 key={s.key}
@@ -749,7 +749,7 @@ export default function AdminSectionPage({ params }: { params: Promise<{ section
                 {s.label}
               </a>
             ))}
-          </nav>
+          </div>
           <div className="a-signout">
             <button onClick={handleSignOut}>Sign Out</button>
           </div>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { fetchContent, saveContent } from '@/lib/content'
+import { fetchContent } from '@/lib/content'
+import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import type { Lang } from '@/types/content'
 
 export async function GET(req: NextRequest) {
@@ -20,7 +21,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing lang or data' }, { status: 400 })
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await saveContent(lang, data as any)
+  await supabaseAdmin
+    .from('site_content')
+    .upsert({ lang, data, updated_at: new Date().toISOString() })
   return NextResponse.json({ ok: true })
 }

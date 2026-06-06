@@ -734,7 +734,7 @@ export default function AdminSectionPage({ params }: { params: Promise<{ section
       <style dangerouslySetInnerHTML={{ __html: ADMIN_CSS }} />
       <div className="a-shell">
         {/* Sidebar */}
-        <aside className="a-sidebar">
+        <aside className="a-sidebar" style={{ background: '#0f172a' }}>
           <div className="a-sidebar-logo">
             <span>TPE Admin</span>
             <p>Taiwan Preschool Exchange</p>

@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Admin — Taiwan Preschool Exchange</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --teal:#619394;--teal-dk:#4A7475;--teal-lt:#EBF2F2;
+  --ink:#1C2A2A;--grey:#5A6A6A;--mid:#8A9A9A;--border:#E2EBEB;
+  --light:#F5F7F7;--white:#FFFFFF;--red:#D94F4F;--green:#3A8A5A;
+  --sans:'DM Sans',-apple-system,sans-serif
+}
+html,body{height:100%;font-family:var(--sans);font-size:14px;color:var(--ink);background:var(--light)}
+button{font-family:var(--sans);cursor:pointer}
+
+/* ── LOGIN SCREEN ── */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#2E4E50,var(--teal-dk))}
+.login-box{background:#fff;border-radius:16px;padding:44px 40px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.18)}
+.login-logo{font-family:Georgia,serif;font-size:16px;font-weight:500;color:var(--teal-dk);margin-bottom:4px}
+.login-logo small{display:block;font-family:var(--sans);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mid)}
+.login-title{font-size:21px;font-weight:700;color:var(--ink);margin:20px 0 6px}
+.login-sub{font-size:13px;color:var(--grey);margin-bottom:28px}
+.login-box input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:var(--sans);outline:none;transition:border-color .15s;margin-bottom:14px}
+.login-box input:focus{border-color:var(--teal)}
+.login-box button{width:100%;padding:12px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;transition:background .15s}
+.login-box button:hover{background:var(--teal-dk)}
+.login-err{display:none;font-size:12.5px;color:var(--red);margin-top:10px;text-align:center}
+
+/* ── ADMIN LAYOUT ── */
+#admin-screen{display:none;height:100vh;display:none;flex-direction:column}
+#admin-screen.visible{display:flex}
+.adm-top{height:54px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0;z-index:10}
+.adm-top-logo{font-size:14px;font-weight:700;color:var(--teal-dk)}
+.adm-top-logo span{color:var(--mid);font-weight:400;margin-left:8px;font-size:12px}
+.adm-top-right{display:flex;align-items:center;gap:12px}
+.save-all-btn{background:var(--teal);color:#fff;border:none;border-radius:7px;padding:7px 18px;font-size:13px;font-weight:600;transition:background .15s}
+.save-all-btn:hover{background:var(--teal-dk)}
+.preview-btn{background:var(--light);color:var(--ink);border:1.5px solid var(--border);border-radius:7px;padding:6px 14px;font-size:13px;font-weight:500}
+.logout-btn{background:none;border:none;color:var(--mid);font-size:12.5px;padding:6px 10px}
+.logout-btn:hover{color:var(--red)}
+.adm-body{display:flex;flex:1;overflow:hidden}
+
+/* ── SIDEBAR ── */
+.sidebar{width:210px;flex-shrink:0;background:#fff;border-right:1px solid var(--border);overflow-y:auto;padding:12px 0}
+.sb-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);padding:12px 18px 6px}
+.sb-btn{display:block;width:100%;text-align:left;background:none;border:none;padding:9px 18px;font-size:13px;color:var(--grey);border-left:3px solid transparent;transition:all .12s}
+.sb-btn:hover{background:var(--light);color:var(--ink)}
+.sb-btn.active{background:var(--teal-lt);color:var(--teal-dk);font-weight:600;border-left-color:var(--teal)}
+
+/* ── CONTENT AREA ── */
+.content{flex:1;overflow-y:auto;padding:28px 32px}
+.content-title{font-size:18px;font-weight:700;color:var(--ink);margin-bottom:4px}
+.content-sub{font-size:12.5px;color:var(--mid);margin-bottom:28px}
+
+/* ── FIELD TABLE ── */
+.field-section{background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:20px}
+.field-section-title{font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--grey);padding:13px 18px;background:var(--light);border-bottom:1px solid var(--border)}
+.field-row{display:grid;grid-template-columns:200px 1fr;gap:0;border-bottom:1px solid var(--border)}
+.field-row:last-child{border-bottom:none}
+.field-label{padding:12px 18px;font-size:12.5px;font-weight:600;color:var(--grey);background:var(--light);display:flex;align-items:flex-start;padding-top:15px;border-right:1px solid var(--border);line-height:1.4}
+.field-input{padding:10px 14px}
+.field-input input,.field-input textarea,.field-input select{width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--sans);font-size:13px;color:var(--ink);background:#fff;outline:none;transition:border-color .15s}
+.field-input input:focus,.field-input textarea:focus{border-color:var(--teal)}
+.field-input textarea{min-height:72px;resize:vertical;line-height:1.6}
+
+/* ── IMAGE FIELD ── */
+.img-field{padding:12px 14px;display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.img-preview{width:90px;height:64px;object-fit:cover;border-radius:6px;background:var(--teal-lt);flex-shrink:0;border:1px solid var(--border)}
+.img-controls{flex:1;min-width:200px}
+.img-controls input{width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:12.5px;font-family:var(--sans);color:var(--ink);background:#fff;outline:none;margin-bottom:7px}
+.img-controls input:focus{border-color:var(--teal)}
+.img-or{font-size:11px;color:var(--mid);margin:4px 0;display:block}
+.img-upload-btn{font-size:12px;color:var(--teal);border:1.5px solid var(--teal);background:none;padding:5px 12px;border-radius:6px;cursor:pointer}
+.img-upload-btn:hover{background:var(--teal-lt)}
+.img-note{font-size:11px;color:var(--mid);margin-top:5px}
+
+/* ── SCHOOL ACCORDION ── */
+.school-item{border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden;background:#fff}
+.school-hd{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+.school-hd:hover{background:var(--light)}
+.school-hd-name{font-size:14px;font-weight:600;color:var(--ink)}
+.school-hd-city{font-size:12px;color:var(--mid)}
+.school-toggle{color:var(--teal);font-size:18px;transition:transform .2s;line-height:1}
+.school-hd.open .school-toggle{transform:rotate(45deg)}
+.school-body{display:none;padding:0 0 16px}
+.school-body.open{display:block}
+
+/* ── LIST EDITOR ── */
+.list-editor{padding:12px 14px}
+.list-item{display:flex;gap:8px;align-items:center;margin-bottom:7px}
+.list-item input{flex:1;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--sans);color:var(--ink);outline:none}
+.list-item input:focus{border-color:var(--teal)}
+.list-rm{background:none;border:none;color:var(--mid);font-size:18px;line-height:1;padding:0 4px;transition:color .15s}
+.list-rm:hover{color:var(--red)}
+.list-add{font-size:12.5px;color:var(--teal);border:1.5px dashed var(--teal);background:none;padding:6px 14px;border-radius:6px;margin-top:4px}
+.list-add:hover{background:var(--teal-lt)}
+
+/* ── SAVE STATUS ── */
+.save-status{position:fixed;bottom:20px;right:20px;background:var(--green);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:500;z-index:999;transform:translateY(60px);opacity:0;transition:all .3s;box-shadow:0 4px 16px rgba(0,0,0,0.15)}
+.save-status.show{transform:translateY(0);opacity:1}
+
+/* ── TABS ── */
+.tab-bar{display:flex;gap:4px;margin-bottom:20px;flex-wrap:wrap}
+.tab-btn{padding:7px 14px;font-size:12.5px;font-weight:500;border-radius:6px;border:1.5px solid var(--border);background:#fff;color:var(--grey);transition:all .15s}
+.tab-btn.active{background:var(--teal);color:#fff;border-color:var(--teal)}
+.tab-btn:hover:not(.active){border-color:var(--teal);color:var(--teal)}
+
+/* ── ADMIN LANG TAB BAR ── */
+.adm-lang-bar{height:42px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:4px;flex-shrink:0}
+.adm-lang-bar-label{font-size:11.5px;color:var(--mid);margin-right:8px;font-weight:500}
+.adm-lang-btn{padding:5px 18px;font-size:12.5px;font-weight:500;border-radius:6px;border:1.5px solid var(--border);background:#fff;color:var(--grey);cursor:pointer;transition:all .15s}
+.adm-lang-btn.active{background:var(--teal);color:#fff;border-color:var(--teal);font-weight:700}
+.adm-lang-btn:hover:not(.active){border-color:var(--teal);color:var(--teal)}
+.adm-save-lang-btn{margin-left:auto;padding:6px 18px;font-size:12.5px;font-weight:600;border-radius:6px;border:none;background:var(--teal);color:#fff;cursor:pointer;transition:background .15s}
+.adm-save-lang-btn:hover{background:var(--teal-dk)}
+
+/* ── RESP ── */
+@media(max-width:640px){
+  .sidebar{display:none}
+  .content{padding:18px}
+  .field-row{grid-template-columns:1fr}
+  .field-label{border-right:none;border-bottom:1px solid var(--border)}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Taiwan Preschool Exchange<small>Admin Panel</small></div>
+    <div class="login-title">Welcome back</div>
+    <div class="login-sub">Enter your admin password to continue.</div>
+    <input type="password" id="pw-input" placeholder="Admin password" onkeydown="if(event.key==='Enter')tryLogin()">
+    <button onclick="tryLogin()">Sign In →</button>
+    <div class="login-err" id="login-err">Incorrect password. Please try again.</div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="admin-screen">
+  <div class="adm-top">
+    <div class="adm-top-logo">Admin Panel <span>Taiwan Preschool Exchange</span></div>
+    <div class="adm-top-right">
+      <button class="preview-btn" onclick="window.open('index.html','_blank')">↗ Preview Site</button>
+      <button class="logout-btn" onclick="logout()">Sign Out</button>
+    </div>
+  </div>
+  <div class="adm-lang-bar">
+    <span class="adm-lang-bar-label">Editing language:</span>
+    <button class="adm-lang-btn active" id="alb-en" onclick="switchAdminLang('en')">English</button>
+    <button class="adm-lang-btn" id="alb-zh" onclick="switchAdminLang('zh')">繁體中文</button>
+    <button class="adm-save-lang-btn" id="adm-save-lang-btn" onclick="saveAll()">Save All — EN Site</button>
+  </div>
+  <div class="adm-body">
+    <div class="sidebar" id="sidebar"></div>
+    <div class="content" id="content-area"></div>
+  </div>
+</div>
+
+<div class="save-status" id="save-status">Changes saved ✓</div>
+
+<script>
+/* ──────────────────────────────────────────
+   AUTH
+────────────────────────────────────────── */
+const ADMIN_PW = 'TWPreschoolAdmin';
+const AUTH_KEY = 'tpe_admin_auth';
+const CONTENT_KEY = 'tpe_content';
+
+function tryLogin(){
+  const pw = document.getElementById('pw-input').value;
+  if(pw === ADMIN_PW){
+    sessionStorage.setItem(AUTH_KEY,'1');
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('admin-screen').classList.add('visible');
+    initAdmin();
+  } else {
+    document.getElementById('login-err').style.display='block';
+    document.getElementById('pw-input').value='';
+    document.getElementById('pw-input').focus();
+  }
+}
+
+function logout(){
+  sessionStorage.removeItem(AUTH_KEY);
+  location.reload();
+}
+
+if(sessionStorage.getItem(AUTH_KEY)==='1'){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('admin-screen').classList.add('visible');
+}
+
+/* ──────────────────────────────────────────
+   CONTENT STORE (mirrors index.html DC)
+────────────────────────────────────────── */
+const DEFAULT_C = {
+  site:{name:"Taiwan Preschool Exchange",tagline:"短期幼稚園交流",email:"contact@preschoolexchange.org",domain:"www.preschoolexchange.org",logo:"assets/logo.png"},
+  home:{
+    heroImg:"https://scontent.fkul22-3.fna.fbcdn.net/v/t39.30808-6/486876075_1162734638974918_5635250187506127984_n.jpg?stp=dst-jpg_tt6&cstp=mx2048x1366&ctp=s2048x1366&_nc_cat=109&ccb=1-7&_nc_sid=127cfc&_nc_ohc=YD_tv2UI3QIQ7kNvwF0mAD_&_nc_oc=AdoCUom_oLTUCgTMXNVhnILHqUxiwCnq6REvxpuQqkjT2EI9OvTnRLHrqFqOa32qB57aCvfRC9qIi6sdx1ecR42J&_nc_zt=23&_nc_ht=scontent.fkul22-3.fna&_nc_gid=PzB8JWnD37z0fulp1SPh9w&_nc_ss=7b289&oh=00_Af_Shi2kXPQ7Yr48AFz5NLZsdNIrDDgWfsi83-RqVO9n8w&oe=6A29C466",
+    heroImgOpacity:0.95,
+    heroImgMobile:true,
+    heroImgMobileOpacity:0.28,
+    badge:"Trusted by international families from 12+ countries",
+    headline:"Global Childhood.\nLocal Experience.",
+    sub:"Short-term preschool experiences in Taiwan, where families experience one of the world's safest and most child-friendly destinations while children connect with local life, nature, language, and new friendships.",
+    cta1:"Explore Programs",cta2:"How It Works",
+    trust:["Ministry-licensed and vetted schools only","Nature-rich school days","Nurturing local educators","10+ years global families experience"],
+    stats:[
+      {num:"4th",label:"Safest country in Asia\n(Numbeo 2025)"},
+      {num:"6",label:"Partner preschools\nacross Taiwan"},
+      {num:"1–12",label:"Weeks, flexible\nprogram duration"},
+      {num:"2–7",label:"Years old,\nchildren welcome"}
+    ],
+    steps:[
+      {title:"Discover & Browse",text:"Explore programs by city, child age, and learning philosophy."},
+      {title:"Book a Consultation",text:"30-minute call with our bilingual team to find your perfect match."},
+      {title:"Apply & Confirm",text:"Complete your application and secure your program with a deposit."},
+      {title:"Arrive & Experience",text:"We handle the details — you arrive supported at every step."}
+    ],
+    ctaTitle:"Every family is different.\nTell us about yours.",ctaSub:"We'll find the right preschool match for your child.",ctaBtn:"Start Your Journey",ctaBtn2:"Browse All Programs"
+  },
+  programs:{
+    title:"Find Your Program",
+    sub:"Browse vetted preschool exchange programs across Taiwan — filtered to fit your family.",
+    schools:[
+      {id:"taipei-bilingual",name:"Taipei Bilingual Preschool",city:"Taipei",area:"Da'an District",ageRange:"3–6 years",languages:"English · Mandarin",durations:"1 – 4 weeks",priceFrom:"2,200",badge:"Most Popular",desc:"A nurturing bilingual environment in the heart of Taipei. Combines English and Mandarin learning through play-based curriculum.",features:["English Support","City Centre","School Bus"],photo:"assets/schools/taipei-bilingual.png"},
+      {id:"taichung-forest",name:"Taichung Forest School",city:"Taichung",area:"Nantun District",ageRange:"2–5 years",languages:"Mandarin · English",durations:"2 – 8 weeks",priceFrom:"1,950",badge:"Nature Pick",desc:"Immersive nature-based learning in Taichung's lush setting. Children explore Taiwan's natural environment through hands-on outdoor activities every day.",features:["Nature-Based","Outdoor Learning","Forest Campus"],photo:"assets/schools/taichung-forest.png"},
+      {id:"taoyuan-kindergarten",name:"Taoyuan International Kindergarten",city:"Taoyuan",area:"Near Airport",ageRange:"2–6 years",languages:"English · Mandarin",durations:"1 – 4 weeks",priceFrom:"1,800",badge:"Easy Arrival",desc:"Conveniently located near Taoyuan International Airport. Warm and welcoming with a strong English-supported curriculum.",features:["Near Airport","English Support","Mixed-Age"],photo:"assets/schools/taoyuan-kindergarten.png"},
+      {id:"tainan-waldorf",name:"Tainan Waldorf School",city:"Tainan",area:"Anping District",ageRange:"3–6 years",languages:"Mandarin · Minimal English",durations:"2 – 12 weeks",priceFrom:"1,700",badge:"Cultural Deep-Dive",desc:"An authentic Waldorf experience in Taiwan's most culturally rich city. Ideal for genuine immersion in Taiwanese daily life.",features:["Waldorf Method","Cultural Immersion","Long-Stay"],photo:"assets/schools/tainan-waldorf.png"},
+      {id:"hualien-montessori",name:"Hualien Montessori House",city:"Hualien",area:"East Coast",ageRange:"2–6 years",languages:"Mandarin · Basic English",durations:"2 – 6 weeks",priceFrom:"1,600",badge:"Most Scenic",desc:"Nestled near the stunning East Coast, this Montessori school pairs child-led learning with breathtaking natural landscapes.",features:["Montessori Method","East Coast","Nature Views"],photo:"assets/schools/hualien-montessori.png"},
+      {id:"nantou-mountain",name:"Nantou Mountain Preschool",city:"Nantou",area:"Sun Moon Lake Area",ageRange:"3–6 years",languages:"Mandarin",durations:"4 – 12 weeks",priceFrom:"1,550",badge:"Hidden Gem",desc:"High in Taiwan's mountain heartland near Sun Moon Lake. Extraordinary long-stay experience immersed in nature and indigenous culture.",features:["Mountain Setting","Indigenous Culture","Long-Stay"],photo:"assets/schools/nantou-mountain.png"}
+    ]
+  },
+  whyTaiwan:{title:"The World's Most Underrated\nFamily Destination",sub:"Few places combine safety, accessibility, nature, and child-friendly infrastructure as naturally as Taiwan.",ctaTitle:"Taiwan is waiting.",ctaSub:"Your family just has to come.",ctaBtn:"Talk to Us"},
+  howItWorks:{title:"Simple From Start to Finish",sub:"From your first question to a confident arrival in Taiwan — we guide every family, every step of the way.",ctaTitle:"Ready to take the first step?",ctaSub:"Book a free 30-minute consultation with our bilingual team.",ctaBtn:"Book a Free Consultation"},
+  about:{title:"About Taiwan Preschool Exchange",sub:"We believe children grow best through experiences that nurture confidence, curiosity, and connection.",missionBg:"assets/schools/taichung-forest.png",mission:"Taiwan Preschool Exchange connects international families with vetted, nature-based, nurturing Taiwanese preschools.",story:"Most families tell us they wish they'd done this sooner. We built Taiwan Preschool Exchange because we believe early childhood is the perfect time to experience the world — gently, safely, and meaningfully.",teamTitle:"The People Behind Every Family's Experience",teamVersion:2,team:[{name:"Chloe Choo",role:"Founder",initials:"CC",quote:"Education has always been the heart I hold on to, no matter where life takes me.",bio:"With over eight years leading international study tours and educational programmes across multiple countries, Chloe holds a Master's in Educational Leadership from the University of Nottingham, is certified in early childhood education, and is co-editor of Life Without Limits, a children's book about resilience."}]},
+  faq:{title:"Frequently Asked Questions",sub:"Everything families ask before booking. Can't find your answer? Contact us directly."},
+  contact:{title:"Get in Touch",sub:"Have a question or ready to start? We'd love to hear from you.",email:"contact@preschoolexchange.org",whatsapp:"Message us on WhatsApp",line:"LINE: @twpreschoolexchange",response:"We typically respond within 24 hours on weekdays.",formTitle:"Send us a message"},
+  partner:{title:"Become a Partner School",sub:"Open your doors to international families seeking meaningful short-term preschool exchange experiences."},
+  blog:{title:"Guides & Stories",sub:"Practical guides, family stories, and insider knowledge for families considering Taiwan."},
+  footer:{desc:"Connecting international families with vetted, nature-based preschools across Taiwan for meaningful short-term exchange experiences.",copyright:"© 2026 Taiwan Preschool Exchange. All rights reserved.",legal:"Taiwan Preschool Exchange 有限公司 · Taipei, Taiwan"}
+};
+
+const DEFAULT_C_ZH = {
+  site:{name:"台灣幼兒交流",tagline:"Taiwan Preschool Exchange",email:"contact@preschoolexchange.org",domain:"www.preschoolexchange.org",defaultLang:"en",logo:"assets/logo.png"},
+  home:{
+    badge:"已獲全球12個以上國家的國際家庭信賴",
+    headline:"全球視野的童年。\n在地真實的體驗。",
+    sub:"台灣短期幼兒交流體驗——讓您的家庭在全球最安全、最友善兒童的目的地，讓孩子接觸在地生活、大自然、語言與新朋友。",
+    cta1:"探索課程方案",cta2:"了解流程",
+    trust:["所有合作學校均獲教育部立案認可","充滿自然探索的豐富學習體驗","溫暖親切的在地幼教師資","10年以上國際家庭服務經驗"],
+    stats:[
+      {num:"全球第4",label:"全球最安全國家\n（2025 Numbeo）"},
+      {num:"6所",label:"遍布台灣各地\n合作幼兒園"},
+      {num:"1–12",label:"彈性課程時長\n（週數）"},
+      {num:"2–7歲",label:"適合此年齡區間\n的兒童"}
+    ],
+    steps:[
+      {title:"探索與瀏覽",text:"依城市、孩子年齡與學習理念，篩選最適合的課程方案。"},
+      {title:"預約諮詢",text:"與我們雙語團隊進行30分鐘通話，找到最適合孩子的學校。"},
+      {title:"申請並確認",text:"完成申請表格，繳交訂金，正式確認您的課程位置。"},
+      {title:"抵達與體驗",text:"我們處理所有細節——您的家庭全程備受支持。"}
+    ],
+    ctaTitle:"每個家庭都不一樣。\n告訴我們您的故事。",ctaSub:"我們將為您的孩子找到最合適的幼兒園。",ctaBtn:"開始您的旅程",ctaBtn2:"瀏覽所有課程"
+  },
+  programs:{
+    title:"尋找您的課程方案",
+    sub:"瀏覽台灣各地通過嚴格審核的幼兒交流課程，篩選最適合您家庭的選擇。",
+    schools:[
+      {id:"taipei-bilingual",name:"台北雙語幼兒園",city:"台北",area:"大安區",ageRange:"3–6歲",languages:"英語 · 普通話",durations:"1 – 4週",priceFrom:"2,200",badge:"最受歡迎",desc:"位於台北市中心的溫馨雙語學習環境。透過遊戲式課程融合英語與普通話學習，師資具備豐富國際教育經驗。",features:["英語教學支援","市中心","校車服務"],photo:"assets/schools/taipei-bilingual.png"},
+      {id:"taichung-forest",name:"台中森林學校",city:"台中",area:"南屯區",ageRange:"2–5歲",languages:"普通話 · 英語",durations:"2 – 8週",priceFrom:"1,950",badge:"自然首選",desc:"沉浸式大自然學習體驗，每天透過親身戶外活動探索台灣豐富的自然環境，在台中綠意盎然的環境中成長。",features:["自然教育","戶外學習","森林校園"],photo:"assets/schools/taichung-forest.png"},
+      {id:"taoyuan-kindergarten",name:"桃園國際幼兒園",city:"桃園",area:"近機場",ageRange:"2–6歲",languages:"英語 · 普通話",durations:"1 – 4週",priceFrom:"1,800",badge:"輕鬆抵達",desc:"緊鄰桃園國際機場，溫馨迎賓的幼兒園提供順暢的入學體驗，並擁有紮實的英語教學課程。",features:["近機場","英語教學支援","混齡班級"],photo:"assets/schools/taoyuan-kindergarten.png"},
+      {id:"tainan-waldorf",name:"台南華德福學校",city:"台南",area:"安平區",ageRange:"3–6歲",languages:"普通話 · 少量英語",durations:"2 – 12週",priceFrom:"1,700",badge:"深度文化體驗",desc:"在台灣文化底蘊最豐厚的城市，體驗真實的華德福教育。最適合追求深度融入台灣日常生活與教育文化的家庭。",features:["華德福教育","文化沉浸","長期入住"],photo:"assets/schools/tainan-waldorf.png"},
+      {id:"hualien-montessori",name:"花蓮蒙特梭利之家",city:"花蓮",area:"東海岸",ageRange:"2–6歲",languages:"普通話 · 基礎英語",durations:"2 – 6週",priceFrom:"1,600",badge:"最美風景",desc:"緊鄰壯麗的東海岸，蒙特梭利學校將孩子主導的學習與台灣最震撼的自然景觀及原住民文化完美結合。",features:["蒙特梭利教育","東海岸","自然美景"],photo:"assets/schools/hualien-montessori.png"},
+      {id:"nantou-mountain",name:"南投山林幼兒園",city:"南投",area:"日月潭周邊",ageRange:"3–6歲",languages:"普通話",durations:"4 – 12週",priceFrom:"1,550",badge:"隱世瑰寶",desc:"深處台灣山心地帶，毗鄰日月潭，為長期入住的家庭提供沉浸於大自然與台灣原住民文化的獨特體驗。",features:["山林環境","原住民文化","長期入住"],photo:"assets/schools/nantou-mountain.png"}
+    ]
+  },
+  whyTaiwan:{title:"全球最被低估的\n親子旅遊目的地",sub:"很少有地方能像台灣一樣，自然地融合安全、便利、自然環境與兒童友善的基礎設施。",ctaTitle:"台灣正在等待您。",ctaSub:"您的家庭只需踏上這段旅程。",ctaBtn:"與我們聯繫"},
+  howItWorks:{title:"簡單輕鬆，從頭到尾",sub:"從第一個問題到自信地踏上台灣——我們全程陪伴每個家庭的每一步。",ctaTitle:"準備好踏出第一步了嗎？",ctaSub:"預約與我們雙語團隊的30分鐘免費諮詢。",ctaBtn:"預約免費諮詢"},
+  about:{title:"關於台灣幼兒交流",sub:"我們相信，孩子在培養自信、好奇心與連結感的體驗中，成長得最好。",missionBg:"assets/schools/taichung-forest.png",mission:"台灣幼兒交流為國際家庭牽線，對接通過嚴格審核、以自然為本的台灣優質幼兒園，為2至7歲兒童創造有意義的短期交流體驗。",story:"許多家庭告訴我們，他們希望更早做這個決定。我們創辦台灣幼兒交流，是因為我們相信幼兒期是以溫柔、安全且有意義的方式探索世界的最佳時機。",teamTitle:"每個家庭體驗背後的用心團隊",teamVersion:2,
+    team:[
+      {name:"Chloe Choo",role:"創辦人",initials:"CC",quote:"無論生命將我帶往何處，教育始終是我心中最堅定的依附。",bio:"Chloe擁有逾八年帶領國際遊學團及教育課程的豐富經驗。持有英國諾丁漢大學教育領導與管理碩士學位，並取得新加坡幼兒教育認證。"}
+    ]
+  },
+  faq:{title:"常見問題",sub:"家庭在報名前最常詢問的問題。找不到您的答案？請直接與我們聯繫。",
+    items:[
+      {q:"這個課程適合幾歲的孩子？",a:"我們的課程歡迎2至7歲的兒童參加。"},
+      {q:"可以待多長時間？",a:"課程時長從1週到12週不等，視學校而定。"},
+      {q:"學校有英語支援嗎？",a:"各學校的英語支援程度不同，我們在每個課程列表上清楚標示。"},
+      {q:"課程費用包含哪些項目？",a:"費用通常包含課程學費、每日午餐與點心、學習材料及每週家長更新。"}
+    ]
+  },
+  contact:{title:"與我們聯繫",sub:"有任何問題，或準備好開始了嗎？我們很期待聽到您的消息。",email:"contact@preschoolexchange.org",whatsapp:"透過 WhatsApp 傳訊給我們",line:"LINE：@twpreschoolexchange",response:"我們通常在平日24小時內回覆。",formTitle:"傳送訊息給我們"},
+  partner:{title:"成為合作學校",sub:"打開校門，迎接正在尋找有意義短期幼兒交流體驗的國際家庭。",ctaTitle:"有興趣與我們合作嗎？",ctaSub:"請發送您學校的名稱、聯絡人及課程簡介給我們。",ctaEmail:"contact@preschoolexchange.org",ctaBtn:"發送郵件表達合作意向"},
+  blog:{title:"指南與故事",sub:"實用指南、家庭故事，以及考慮來台灣的家庭最需要的第一手知識。",
+    posts:[
+      {tag:"家庭指南",title:"台灣4週幼兒交流，行李怎麼打？",excerpt:"為第一次帶著幼兒在台灣長期生活的家庭準備的實用打包指南。",date:"2026年5月"},
+      {tag:"學校特寫",title:"走進台中森林學校：一週的生活日記",excerpt:"一個4歲孩子典型一週的真實樣貌。",date:"2026年4月"},
+      {tag:"台灣旅遊",title:"從台北出發的最佳親子週末小旅行",excerpt:"台北出發兩小時內的最佳親子一日遊目的地。",date:"2026年3月"},
+      {tag:"家長故事",title:"「我們沒想到，女兒離開台灣時會哭」",excerpt:"一個香港家庭分享他們在台南華德福學校3週交流的深刻體驗。",date:"2026年2月"},
+      {tag:"實用建議",title:"外籍家庭在台就醫，你真正需要知道的事",excerpt:"為在台外籍家庭整理的清晰就醫指南。",date:"2026年1月"},
+      {tag:"學校特寫",title:"花蓮蒙特梭利之家：在東海岸遇見學習",excerpt:"我們最新的合作學校就在台灣壯麗東海岸旁。",date:"2025年12月"}
+    ]
+  },
+  footer:{desc:"為國際家庭與台灣各地通過嚴格審核的自然系幼兒園牽線，打造有意義的短期交流體驗。",copyright:"© 2026 台灣幼兒交流。保留所有權利。",legal:"Taiwan Preschool Exchange 有限公司 · 台灣台北"}
+};
+
+function loadContent(lang){
+  const key=lang==='zh'?'tpe_content_zh':'tpe_content';
+  const def=lang==='zh'?DEFAULT_C_ZH:DEFAULT_C;
+  const base=JSON.parse(JSON.stringify(def));
+  try{
+    const s=localStorage.getItem(key);
+    if(!s) return base;
+    const stored=JSON.parse(s);
+    // Shallow-merge per top-level key so missing fields fall back to defaults
+    for(const k of Object.keys(base)){
+      if(stored[k]===undefined) continue;
+      if(k==='programs'){
+        base[k]={...base[k],...stored[k]};
+      } else if(k==='about'){
+        const merged={...base[k],...stored[k]};
+        if((stored[k].teamVersion||0)<(base[k].teamVersion||0)){merged.team=base[k].team;merged.teamVersion=base[k].teamVersion;}
+        base[k]=merged;
+      } else if(typeof base[k]==='object'&&base[k]!==null&&!Array.isArray(base[k])){
+        base[k]={...base[k],...stored[k]};
+      } else {
+        base[k]=stored[k];
+      }
+    }
+    return base;
+  }catch(e){}
+  return base;
+}
+
+let adminLang = 'en';
+let DATA_EN = loadContent('en');
+let DATA_ZH = loadContent('zh');
+let DATA = DATA_EN;
+
+function switchAdminLang(lang){
+  adminLang=lang;
+  DATA=lang==='zh'?DATA_ZH:DATA_EN;
+  document.getElementById('alb-en').classList.toggle('active',lang==='en');
+  document.getElementById('alb-zh').classList.toggle('active',lang==='zh');
+  document.getElementById('adm-save-lang-btn').textContent=lang==='zh'?'Save All — 繁體中文':'Save All — EN Site';
+  showSection(activeSection);
+}
+
+/* ──────────────────────────────────────────
+   SIDEBAR
+────────────────────────────────────────── */
+const SECTIONS = [
+  {key:'site',label:'Site Settings'},
+  {key:'home',label:'Home Page'},
+  {key:'programs',label:'Programs'},
+  {key:'schools',label:'School Listings'},
+  {key:'whyTaiwan',label:'Why Taiwan'},
+  {key:'howItWorks',label:'How It Works'},
+  {key:'about',label:'About Us'},
+  {key:'faq',label:'FAQ'},
+  {key:'contact',label:'Contact'},
+  {key:'partner',label:'Partner With Us'},
+  {key:'blog',label:'Blog'},
+  {key:'footer',label:'Footer'}
+];
+
+let activeSection = 'site';
+
+function buildSidebar(){
+  const sb = document.getElementById('sidebar');
+  sb.innerHTML = `<div class="sb-label">Content Sections</div>` +
+    SECTIONS.map(s=>`<button class="sb-btn${s.key===activeSection?' active':''}" onclick="showSection('${s.key}')">${s.label}</button>`).join('');
+}
+
+function showSection(key){
+  activeSection = key;
+  buildSidebar();
+  const area = document.getElementById('content-area');
+  area.innerHTML = RENDERERS[key] ? RENDERERS[key]() : `<div style="color:var(--mid)">Section coming soon</div>`;
+}
+
+/* ──────────────────────────────────────────
+   FIELD HELPERS
+────────────────────────────────────────── */
+function fRow(label, inputHtml){
+  return `<div class="field-row"><div class="field-label">${label}</div><div class="field-input">${inputHtml}</div></div>`;
+}
+function fText(id, val, placeholder=''){
+  return `<input type="text" id="${id}" value="${esc(val)}" placeholder="${placeholder}" onchange="setVal('${id}',this.value)">`;
+}
+function fArea(id, val, placeholder=''){
+  return `<textarea id="${id}" placeholder="${placeholder}" onchange="setVal('${id}',this.value)">${esc(val)}</textarea>`;
+}
+function fImg(id, src, label=''){
+  return `<div class="img-field">
+    <img class="img-preview" id="img-prev-${id}" src="${src||''}" onerror="this.src=''" alt="${label}">
+    <div class="img-controls">
+      <input type="text" id="${id}" value="${esc(src)}" placeholder="Image URL or file path" onchange="setVal('${id}',this.value);document.getElementById('img-prev-${id}').src=this.value">
+      <span class="img-or">— or upload from computer —</span>
+      <label>
+        <input type="file" accept="image/*" style="display:none" onchange="uploadImg(this,'${id}')">
+        <span class="img-upload-btn">Choose File</span>
+      </label>
+      <div class="img-note">Changes are saved locally in your browser.</div>
+    </div>
+  </div>`;
+}
+function fSection(title, fields){
+  return `<div class="field-section"><div class="field-section-title">${title}</div>${fields}</div>`;
+}
+function esc(v){ return (v||'').toString().replace(/"/g,'&quot;').replace(/</g,'&lt;') }
+function fieldHeader(title,sub){
+  return `<div class="content-title">${title}</div><div class="content-sub">${sub||'Edit all text content for this section. Changes apply immediately after saving.'}</div>`;
+}
+
+/* Deep-set a value in DATA using dot-path like "home.headline" */
+function setVal(path, val){
+  const keys = path.split('__');
+  let obj = DATA;
+  for(let i=0;i<keys.length-1;i++){
+    if(obj[keys[i]]===undefined) obj[keys[i]]={};
+    obj=obj[keys[i]];
+  }
+  obj[keys[keys.length-1]] = val;
+}
+
+function uploadImg(input, id){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e=>{
+    const b64 = e.target.result;
+    document.getElementById(id).value = b64;
+    document.getElementById('img-prev-'+id).src = b64;
+    setVal(id, b64);
+    showSaved();
+  };
+  reader.readAsDataURL(file);
+}
+
+function addTeamMember(){
+  DATA.about.team.push({name:"New Member",role:"",initials:"",quote:"",bio:"",photo:""});
+  showSection('about');
+}
+function removeTeamMember(i){
+  DATA.about.team.splice(i,1);
+  showSection('about');
+}
+
+/* ──────────────────────────────────────────
+   SAVE
+────────────────────────────────────────── */
+function saveAll(){
+  const key=adminLang==='zh'?'tpe_content_zh':'tpe_content';
+  localStorage.setItem(key,JSON.stringify(DATA));
+  showSaved();
+}
+
+function showSaved(){
+  const s = document.getElementById('save-status');
+  s.classList.add('show');
+  setTimeout(()=>s.classList.remove('show'), 2800);
+}
+
+/* ──────────────────────────────────────────
+   LIST EDITOR
+────────────────────────────────────────── */
+function listEditor(pathPrefix, items, placeholder){
+  const id = 'le_'+pathPrefix;
+  return `<div class="list-editor" id="${id}">
+    ${items.map((item,i)=>`
+      <div class="list-item">
+        <input type="text" value="${esc(item)}" placeholder="${placeholder||'Item'}"
+          onchange="updateListItem('${pathPrefix}',${i},this.value)">
+        <button class="list-rm" onclick="removeListItem('${pathPrefix}',${i})">×</button>
+      </div>
+    `).join('')}
+    <button class="list-add" onclick="addListItem('${pathPrefix}','${placeholder||''}')">+ Add item</button>
+  </div>`;
+}
+
+function getListByPath(path){
+  const keys=path.split('__');
+  let obj=DATA;
+  for(const k of keys) obj=obj[k];
+  return obj;
+}
+function setListByPath(path,arr){
+  const keys=path.split('__');
+  let obj=DATA;
+  for(let i=0;i<keys.length-1;i++) obj=obj[keys[i]];
+  obj[keys[keys.length-1]]=arr;
+}
+
+function updateListItem(path,idx,val){
+  const arr=getListByPath(path);
+  arr[idx]=val;
+  setListByPath(path,arr);
+}
+function removeListItem(path,idx){
+  const arr=getListByPath(path);
+  arr.splice(idx,1);
+  setListByPath(path,arr);
+  showSection(activeSection);
+}
+function addListItem(path){
+  const arr=getListByPath(path);
+  arr.push('');
+  setListByPath(path,arr);
+  showSection(activeSection);
+}
+
+/* ──────────────────────────────────────────
+   SECTION RENDERERS
+────────────────────────────────────────── */
+const RENDERERS = {
+
+  site(){
+    const d=DATA.site;
+    return fieldHeader('Site Settings','Global settings that appear across the entire website.') +
+    fSection('Brand',[
+      fRow('Site Name', fText('site__name', d.name)),
+      fRow('Tagline', fText('site__tagline', d.tagline)),
+      fRow('Contact Email', fText('site__email', d.email)),
+      fRow('Domain', fText('site__domain', d.domain))
+    ].join('')) +
+    (adminLang==='en' ? fSection('Language',[
+      fRow('Default Language',`<div style="padding:4px 0;display:flex;gap:14px">
+        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:13px"><input type="radio" name="deflang" value="en" ${(DATA_EN.site.defaultLang||'en')==='en'?'checked':''} style="accent-color:var(--teal)" onchange="DATA_EN.site.defaultLang='en'"> English (EN)</label>
+        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:13px"><input type="radio" name="deflang" value="zh" ${(DATA_EN.site.defaultLang||'en')==='zh'?'checked':''} style="accent-color:var(--teal)" onchange="DATA_EN.site.defaultLang='zh'"> 繁體中文 (ZH)</label>
+      </div><div style="font-size:11.5px;color:var(--mid);margin-top:6px">Sets the language shown to visitors on their first visit.</div>`)
+    ].join('')) : '') +
+    fSection('Logo',[
+      fRow('Logo Image', fImg('site__logo', d.logo||'','Logo'))
+    ].join(''));
+  },
+
+  home(){
+    const d=DATA.home;
+    return fieldHeader('Home Page','All text shown on the home page.') +
+    fSection('Hero Banner',[
+      fRow('Badge Text', fText('home__badge', d.badge)),
+      fRow('Headline', fArea('home__headline', d.headline, 'Two-line headline')),
+      fRow('Sub-headline', fArea('home__sub', d.sub)),
+      fRow('Button 1 Label', fText('home__cta1', d.cta1)),
+      fRow('Button 2 Label', fText('home__cta2', d.cta2))
+    ].join('')) +
+    fSection('Hero Background Image (right side)', [
+      fRow('Image URL',`
+        <input type="text" id="home__heroImg" value="${esc(d.heroImg||'')}"
+          placeholder="Paste any image URL from Google, Unsplash, etc."
+          style="width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--sans)"
+          onchange="DATA.home.heroImg=this.value">
+        <div style="font-size:11.5px;color:var(--mid);margin-top:8px">Paste the full image URL, then click <strong>Save All Changes</strong> to apply.</div>
+      `),
+      fRow('Desktop Opacity',`
+        <div style="padding:6px 0">
+          <div style="display:flex;align-items:center;gap:14px">
+            <input type="range" min="10" max="100" value="${Math.round((d.heroImgOpacity||0.95)*100)}"
+              style="flex:1;accent-color:var(--teal)"
+              oninput="DATA.home.heroImgOpacity=this.value/100;document.getElementById('opacity-display').textContent=this.value+'%'">
+            <span id="opacity-display" style="font-size:14px;font-weight:700;color:var(--teal-dk);min-width:44px;text-align:right">${Math.round((d.heroImgOpacity||0.95)*100)}%</span>
+          </div>
+          <div style="font-size:11.5px;color:var(--mid);margin-top:6px">Recommended 80–95% · image sits on the right, blending into the green gradient</div>
+        </div>
+      `),
+      fRow('Show on Mobile',`
+        <div style="padding:8px 0;display:flex;align-items:center;gap:12px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--ink)">
+            <input type="checkbox" ${d.heroImgMobile!==false?'checked':''} style="width:16px;height:16px;accent-color:var(--teal)"
+              onchange="DATA.home.heroImgMobile=this.checked;document.getElementById('mobile-opacity-row').style.display=this.checked?'':'none'">
+            Show image on mobile (full-width background behind text)
+          </label>
+        </div>
+      `),
+      fRow('Mobile Opacity',`
+        <div id="mobile-opacity-row" style="padding:6px 0${d.heroImgMobile===false?';display:none':''}">
+          <div style="display:flex;align-items:center;gap:14px">
+            <input type="range" min="5" max="80" value="${Math.round((d.heroImgMobileOpacity||0.28)*100)}"
+              style="flex:1;accent-color:var(--teal)"
+              oninput="DATA.home.heroImgMobileOpacity=this.value/100;document.getElementById('mob-opacity-display').textContent=this.value+'%'">
+            <span id="mob-opacity-display" style="font-size:14px;font-weight:700;color:var(--teal-dk);min-width:44px;text-align:right">${Math.round((d.heroImgMobileOpacity||0.28)*100)}%</span>
+          </div>
+          <div style="font-size:11.5px;color:var(--mid);margin-top:6px">Keep low (15–35%) so text stays readable over the image on small screens</div>
+        </div>
+      `)
+    ].join('')) +
+    fSection('Trust Signals (4 checkmarks)',
+      `<div class="field-input">${listEditor('home__trust', d.trust, 'Trust signal text')}</div>`
+    ) +
+    fSection('Stats Bar (4 numbers)',
+      `<div class="field-input" style="padding:12px 14px">
+        ${(d.stats||[]).map((s,i)=>`
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)">
+            <div><div style="font-size:11px;color:var(--mid);margin-bottom:4px">Stat ${i+1} — Number</div>
+              <input type="text" value="${esc(s.num)}" style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--sans)"
+                onchange="DATA.home.stats[${i}].num=this.value"></div>
+            <div><div style="font-size:11px;color:var(--mid);margin-bottom:4px">Label</div>
+              <input type="text" value="${esc(s.label)}" style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--sans)"
+                onchange="DATA.home.stats[${i}].label=this.value"></div>
+          </div>
+        `).join('')}
+      </div>`
+    ) +
+    fSection('How It Works Steps',
+      `<div class="field-input" style="padding:12px 14px">
+        ${(d.steps||[]).map((s,i)=>`
+          <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)">
+            <div style="font-size:11px;font-weight:700;color:var(--mid);margin-bottom:6px">Step ${i+1}</div>
+            <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px">
+              <input type="text" value="${esc(s.title)}" placeholder="Title" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--sans)"
+                onchange="DATA.home.steps[${i}].title=this.value">
+              <input type="text" value="${esc(s.text)}" placeholder="Description" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--sans)"
+                onchange="DATA.home.steps[${i}].text=this.value">
+            </div>
+          </div>
+        `).join('')}
+      </div>`
+    ) +
+    fSection('CTA Banner',[
+      fRow('Title', fArea('home__ctaTitle', d.ctaTitle)),
+      fRow('Subtitle', fText('home__ctaSub', d.ctaSub)),
+      fRow('Button 1', fText('home__ctaBtn', d.ctaBtn)),
+      fRow('Button 2', fText('home__ctaBtn2', d.ctaBtn2))
+    ].join(''));
+  },
+
+  programs(){
+    const d=DATA.programs;
+    return fieldHeader('Programs Page','Title and subtitle shown at the top of the programs listing page.') +
+    fSection('Page Header',[
+      fRow('Page Title', fText('programs__title', d.title)),
+      fRow('Subtitle', fArea('programs__sub', d.sub))
+    ].join(''));
+  },
+
+  schools(){
+    const schools=DATA.programs.schools;
+    return fieldHeader('School Listings','Edit each school\'s name, details, description, price, and photo.') +
+    schools.map((s,i)=>`
+      <div class="school-item">
+        <div class="school-hd" onclick="toggleSchool(${i})">
+          <div>
+            <div class="school-hd-name">${s.name}</div>
+            <div class="school-hd-city">${s.city} · ${s.area} · From USD ${s.priceFrom}</div>
+          </div>
+          <span class="school-toggle" id="school-tog-${i}">+</span>
+        </div>
+        <div class="school-body" id="school-body-${i}">
+          ${fSection('Basic Info',[
+            fRow('School Name', `<input type="text" value="${esc(s.name)}" onchange="DATA.programs.schools[${i}].name=this.value;this.closest('.school-item').querySelector('.school-hd-name').textContent=this.value" style="width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--sans)">`),
+            fRow('City', `<input type="text" value="${esc(s.city)}" onchange="DATA.programs.schools[${i}].city=this.value" style="width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--sans)">`),
+            fRow('Area', `<input type="text" value="${esc(s.area)}" onchange="DATA.programs.schools[${i}].area=this.value" style="width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--sans)">`),
+            fRow('Age Range', `<input type="text" value="${esc(s.ageRange)}" onchange="DATA.programs.schools[${i}].ageRange=this.value" style="width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--sans)">`),
+            fRow('Languages', `<input type="text" value="${esc(s.languages)}" onchange="DATA.programs.schools[${i}].languages=this.value" style="width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--sans)">`),
+            fRow('Duration Range', `<input type="text" value="${esc(s.durations)}" onchange="DATA.programs.schools[${i}].durations=this.value" style="width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--sans)">`),
+            fRow('Price From (USD)', `<input type="text" value="${esc(s.priceFrom)}" onchange="DATA.programs.schools[${i}].priceFrom=this.value;this.closest('.school-item').querySelector('.school-hd-city').textContent='${s.city} · ${s.area} · From USD '+this.value" style="width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--sans)">`),
+            fRow('Badge Label', `<input type="text" value="${esc(s.badge)}" onchange="DATA.programs.schools[${i}].badge=this.value" style="width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--sans)">`)
+          ].join(''))}
+          ${fSection('Description',
+            `<div class="field-input"><textarea onchange="DATA.programs.schools[${i}].desc=this.value" style="width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--sans);min-height:80px">${esc(s.desc)}</textarea></div>`
+          )}
+          ${fSection('Feature Tags (shown as badges)',
+            `<div class="field-input">${listEditor('programs__schools__'+i+'__features', s.features, 'Feature tag')}</div>`
+          )}
+          ${fSection('School Photo',
+            `<div class="field-row"><div class="field-label">Photo</div>${fImg('img_school_'+i, s.photo, s.name)}</div>`
+          )}
+        </div>
+      </div>
+    `).join('') +
+    `<div style="margin-top:20px;padding:16px 18px;background:#fff;border:1.5px dashed var(--border);border-radius:10px;text-align:center">
+      <div style="font-size:13px;color:var(--mid)">To add a new school, duplicate an existing entry in the content JSON.</div>
+      <button class="btn" style="margin-top:10px;padding:7px 16px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12.5px" onclick="addSchool()">+ Add New School</button>
+    </div>`;
+  },
+
+  whyTaiwan(){
+    const d=DATA.whyTaiwan;
+    return fieldHeader('Why Taiwan Page') +
+    fSection('Page Header',[
+      fRow('Page Title', fArea('whyTaiwan__title', d.title)),
+      fRow('Subtitle', fArea('whyTaiwan__sub', d.sub))
+    ].join('')) +
+    fSection('CTA Banner',[
+      fRow('Title', fText('whyTaiwan__ctaTitle', d.ctaTitle)),
+      fRow('Subtitle', fText('whyTaiwan__ctaSub', d.ctaSub)),
+      fRow('Button Label', fText('whyTaiwan__ctaBtn', d.ctaBtn))
+    ].join(''));
+  },
+
+  howItWorks(){
+    const d=DATA.howItWorks;
+    return fieldHeader('How It Works Page') +
+    fSection('Page Header',[
+      fRow('Page Title', fText('howItWorks__title', d.title)),
+      fRow('Subtitle', fArea('howItWorks__sub', d.sub))
+    ].join('')) +
+    fSection('CTA Banner',[
+      fRow('Title', fText('howItWorks__ctaTitle', d.ctaTitle)),
+      fRow('Subtitle', fText('howItWorks__ctaSub', d.ctaSub)),
+      fRow('Button Label', fText('howItWorks__ctaBtn', d.ctaBtn))
+    ].join(''));
+  },
+
+  about(){
+    const d=DATA.about;
+    return fieldHeader('About Us Page') +
+    fSection('Page Header',[
+      fRow('Page Title', fText('about__title', d.title)),
+      fRow('Subtitle', fArea('about__sub', d.sub))
+    ].join('')) +
+    fSection('Mission & Story',[
+      fRow('Mission Statement', fArea('about__mission', d.mission)),
+      fRow('Story Paragraph', fArea('about__story', d.story)),
+      fRow('Mission Background Image', fImg('about__missionBg', d.missionBg||'', 'Mission Background'))
+    ].join('')) +
+    fSection('Team — Section Title',[
+      fRow('Team Section Title', fText('about__teamTitle', d.teamTitle))
+    ].join('')) +
+    `<div style="margin-top:16px">
+      <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:14px">Team Members</div>
+      ${(d.team||[]).map((t,i)=>`
+        <div class="field-section" style="margin-bottom:14px">
+          <div class="field-section-title" style="display:flex;align-items:center;justify-content:space-between">
+            <span>Team Member ${i+1} — ${t.name}</span>
+            <button onclick="removeTeamMember(${i})" style="font-size:11px;padding:3px 10px;border:1px solid #e0a0a0;border-radius:5px;background:#fff5f5;color:#c0392b;cursor:pointer">Remove</button>
+          </div>
+          ${fRow('Name', `<input type="text" value="${esc(t.name)}" onchange="DATA.about.team[${i}].name=this.value" style="width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--sans)">`)}
+          ${fRow('Role', `<input type="text" value="${esc(t.role)}" onchange="DATA.about.team[${i}].role=this.value" style="width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--sans)">`)}
+          ${fRow('Initials', `<input type="text" value="${esc(t.initials)}" onchange="DATA.about.team[${i}].initials=this.value" style="width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--sans)" maxlength="3">`)}
+          ${fRow('Quote', `<input type="text" value="${esc(t.quote)}" onchange="DATA.about.team[${i}].quote=this.value" style="width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--sans)">`)}
+          ${fRow('Bio', `<textarea onchange="DATA.about.team[${i}].bio=this.value" style="width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--sans);min-height:80px">${esc(t.bio)}</textarea>`)}
+          ${fRow('Photo', fImg('team_photo_'+i, t.photo||'', t.name))}
+        </div>
+      `).join('')}
+      <button class="list-add" onclick="addTeamMember()">+ Add Team Member</button>
+    </div>`;
+  },
+
+  faq(){
+    const d=DATA.faq;
+    return fieldHeader('FAQ Page') +
+    fSection('Page Header',[
+      fRow('Page Title', fText('faq__title', d.title)),
+      fRow('Subtitle', fArea('faq__sub', d.sub))
+    ].join('')) +
+    `<div style="margin-top:16px">
+      <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:14px">FAQ Items</div>
+      ${(d.items||[]).map((item,i)=>`
+        <div class="field-section" style="margin-bottom:12px">
+          <div class="field-section-title">Q${i+1}</div>
+          ${fRow('Question', `<input type="text" value="${esc(item.q)}" onchange="DATA.faq.items[${i}].q=this.value" style="width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--sans)">`)}
+          ${fRow('Answer', `<textarea onchange="DATA.faq.items[${i}].a=this.value" style="width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--sans);min-height:72px">${esc(item.a)}</textarea>`)}
+        </div>
+      `).join('')}
+      <button class="list-add" onclick="DATA.faq.items.push({q:'New question',a:'Answer here'});showSection('faq')">+ Add FAQ item</button>
+    </div>`;
+  },
+
+  contact(){
+    const d=DATA.contact;
+    return fieldHeader('Contact Page') +
+    fSection('Page Header',[
+      fRow('Page Title', fText('contact__title', d.title)),
+      fRow('Subtitle', fArea('contact__sub', d.sub))
+    ].join('')) +
+    fSection('Contact Details',[
+      fRow('Email', fText('contact__email', d.email)),
+      fRow('WhatsApp Label', fText('contact__whatsapp', d.whatsapp)),
+      fRow('LINE', fText('contact__line', d.line)),
+      fRow('Response Time Note', fText('contact__response', d.response)),
+      fRow('Form Title', fText('contact__formTitle', d.formTitle))
+    ].join(''));
+  },
+
+  partner(){
+    const d=DATA.partner;
+    return fieldHeader('Partner With Us Page') +
+    fSection('Page Header',[
+      fRow('Page Title', fText('partner__title', d.title)),
+      fRow('Subtitle', fArea('partner__sub', d.sub))
+    ].join('')) +
+    fSection('CTA Section',[
+      fRow('CTA Title', fText('partner__ctaTitle', d.ctaTitle||'')),
+      fRow('CTA Subtitle', fArea('partner__ctaSub', d.ctaSub||'')),
+      fRow('CTA Email', fText('partner__ctaEmail', d.ctaEmail||'')),
+      fRow('CTA Button', fText('partner__ctaBtn', d.ctaBtn||''))
+    ].join(''));
+  },
+
+  blog(){
+    const d=DATA.blog;
+    return fieldHeader('Blog Page') +
+    fSection('Page Header',[
+      fRow('Page Title', fText('blog__title', d.title)),
+      fRow('Subtitle', fArea('blog__sub', d.sub))
+    ].join('')) +
+    `<div style="margin-top:16px">
+      <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:14px">Blog Posts</div>
+      ${(d.posts||[]).map((p,i)=>`
+        <div class="field-section" style="margin-bottom:12px">
+          <div class="field-section-title">Post ${i+1}</div>
+          ${fRow('Tag', `<input type="text" value="${esc(p.tag)}" onchange="DATA.blog.posts[${i}].tag=this.value" style="width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--sans)">`)}
+          ${fRow('Title', `<input type="text" value="${esc(p.title)}" onchange="DATA.blog.posts[${i}].title=this.value" style="width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--sans)">`)}
+          ${fRow('Excerpt', `<textarea onchange="DATA.blog.posts[${i}].excerpt=this.value" style="width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--sans);min-height:64px">${esc(p.excerpt)}</textarea>`)}
+          ${fRow('Date', `<input type="text" value="${esc(p.date)}" onchange="DATA.blog.posts[${i}].date=this.value" style="width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--sans)">`)}
+          ${fRow('Cover Image', fImg('blog_img_'+i, p.img||'', p.title))}
+        </div>
+      `).join('')}
+      <button class="list-add" onclick="DATA.blog.posts.push({tag:'',title:'',excerpt:'',date:'',img:''});showSection('blog')">+ Add blog post</button>
+    </div>`;
+  },
+
+  footer(){
+    const d=DATA.footer;
+    return fieldHeader('Footer') +
+    fSection('Footer Content',[
+      fRow('Description', fArea('footer__desc', d.desc)),
+      fRow('Copyright', fText('footer__copyright', d.copyright)),
+      fRow('Legal Line', fText('footer__legal', d.legal))
+    ].join(''));
+  }
+};
+
+/* ──────────────────────────────────────────
+   SCHOOL ACCORDION
+────────────────────────────────────────── */
+function toggleSchool(i){
+  const body = document.getElementById('school-body-'+i);
+  const tog = document.getElementById('school-tog-'+i);
+  const hd = tog.closest('.school-hd');
+  body.classList.toggle('open');
+  hd.classList.toggle('open');
+  tog.textContent = body.classList.contains('open') ? '×' : '+';
+}
+
+function addSchool(){
+  const newSchool = {
+    id: 'school-'+Date.now(),
+    name:"New School",city:"City",area:"Area",
+    ageRange:"2–6 years",languages:"Mandarin",
+    durations:"1 – 4 weeks",priceFrom:"0",
+    badge:"New",desc:"School description here.",
+    features:["Feature 1"],photo:""
+  };
+  DATA.programs.schools.push(newSchool);
+  showSection('schools');
+}
+
+function handleImgChange(path, val, previewId){
+  setVal(path, val);
+  const prev = document.getElementById(previewId);
+  if(prev) prev.src = val;
+}
+
+/* ──────────────────────────────────────────
+   INIT
+────────────────────────────────────────── */
+function updateHeroPreview(url){
+  const wrap=document.getElementById('hero-img-preview-wrap');
+  const img=document.getElementById('hero-img-preview');
+  if(url&&wrap&&img){wrap.style.display='block';img.src=url}
+  else if(wrap){wrap.style.display='none'}
+}
+
+function initAdmin(){
+  buildSidebar();
+  showSection('site');
+}
+
+if(sessionStorage.getItem(AUTH_KEY)==='1'){
+  initAdmin();
+}
+</script>
+</body>
+</html>

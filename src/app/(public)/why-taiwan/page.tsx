@@ -15,7 +15,7 @@ export default function WhyTaiwanPage() {
     <>
       {/* ── PAGE HEADER ── */}
       <div className="ph">
-        <div className="ph-bg" style={{ backgroundImage: "url('/assets/schools/taichung-forest.png')" }} />
+        <div className="ph-bg" style={{ backgroundImage: "url('/assets/schools/taichung-forest.png')", opacity: C.site.heroBgOpacity ?? 0.10 }} />
         <div className="wrap">
           <h1 style={{ whiteSpace: 'pre-line' }}>{w.title}</h1>
           <p>{w.sub}</p>

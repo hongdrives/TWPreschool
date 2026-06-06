@@ -31,7 +31,7 @@ export default function AboutPage() {
     <>
       {/* Page header */}
       <section className="ph">
-        <div className="ph-bg" style={{ backgroundImage: "url('/assets/schools/tainan-waldorf.png')" }} />
+        <div className="ph-bg" style={{ backgroundImage: "url('/assets/schools/tainan-waldorf.png')", opacity: C.site.heroBgOpacity ?? 0.10 }} />
         <div className="wrap">
           <h1>{a.title}</h1>
           <p>{a.sub}</p>

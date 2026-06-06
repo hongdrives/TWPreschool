@@ -16,7 +16,7 @@ export default function FaqPage() {
     <>
       {/* Page header */}
       <section className="ph">
-        <div className="ph-bg" style={{ backgroundImage: "url('/assets/schools/taoyuan-kindergarten.png')" }} />
+        <div className="ph-bg" style={{ backgroundImage: "url('/assets/schools/taoyuan-kindergarten.png')", opacity: C.site.heroBgOpacity ?? 0.10 }} />
         <div className="wrap">
           <h1>{f.title}</h1>
           <p>{f.sub}</p>

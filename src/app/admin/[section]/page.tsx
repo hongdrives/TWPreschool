@@ -188,6 +188,7 @@ function CollapsibleItem({
 
 function SiteEditor({ data, onChange }: { data: SiteContent['site']; onChange: (v: SiteContent['site']) => void }) {
   const u = (k: keyof SiteContent['site'], v: string) => onChange({ ...data, [k]: v })
+  const opacity = data.heroBgOpacity ?? 0.10
   return (
     <div className="a-card">
       <div className="a-card-title">Site Settings</div>
@@ -196,6 +197,19 @@ function SiteEditor({ data, onChange }: { data: SiteContent['site']; onChange: (
       {fRow('Email', inp(data.email, v => u('email', v)))}
       {fRow('Domain', inp(data.domain, v => u('domain', v)))}
       {fRow('Logo URL', inp(data.logo, v => u('logo', v)))}
+      {fRow('Page Hero BG Opacity',
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <input
+            type="range" min="0" max="0.5" step="0.01"
+            value={opacity}
+            onChange={e => onChange({ ...data, heroBgOpacity: parseFloat(e.target.value) })}
+            style={{ flex: 1 }}
+          />
+          <span style={{ minWidth: 36, fontSize: '.875rem', color: '#374151', fontWeight: 600 }}>
+            {Math.round(opacity * 100)}%
+          </span>
+        </div>
+      )}
       {fRow('Default Language',
         <div className="f-radio-group">
           {(['en', 'zh'] as const).map(l => (

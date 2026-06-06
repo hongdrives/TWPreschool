@@ -29,7 +29,7 @@ export interface BenefitItem { icon: string; title: string; text: string }
 export interface SiteContent {
   site: {
     name: string; tagline: string; email: string; domain: string
-    logo: string; defaultLang?: string
+    logo: string; defaultLang?: string; heroBgOpacity?: number
   }
   nav: { links: NavLink[]; cta: CtaLink }
   home: {

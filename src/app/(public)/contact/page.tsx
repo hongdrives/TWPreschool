@@ -34,7 +34,7 @@ export default function ContactPage() {
   return (
     <>
       <section className="ph">
-        <div className="ph-bg" style={{ backgroundImage: "url('/assets/schools/taoyuan-kindergarten.png')" }} />
+        <div className="ph-bg" style={{ backgroundImage: "url('/assets/schools/taoyuan-kindergarten.png')", opacity: C.site.heroBgOpacity ?? 0.10 }} />
         <div className="wrap">
           <h1>{ct.title}</h1>
           <p>{ct.sub}</p>

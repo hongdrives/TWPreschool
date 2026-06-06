@@ -251,6 +251,34 @@ function HomeEditor({ data, onChange }: { data: SiteContent['home']; onChange: (
       <div className="a-card">
         <div className="a-card-title">Hero</div>
         {fRow('Hero Image URL', inp(data.heroImg, v => u('heroImg', v)))}
+        {fRow('Desktop BG Opacity',
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <input type="range" min="0" max="1" step="0.01"
+              value={data.heroImgOpacity ?? 0.95}
+              onChange={e => u('heroImgOpacity', parseFloat(e.target.value))}
+              style={{ flex: 1 }} />
+            <span style={{ minWidth: 36, fontSize: '.875rem', fontWeight: 600 }}>{Math.round((data.heroImgOpacity ?? 0.95) * 100)}%</span>
+          </div>
+        )}
+        {fRow('Show on Mobile',
+          <div className="f-radio-group">
+            {([true, false] as const).map(v => (
+              <label key={String(v)}>
+                <input type="radio" checked={(data.heroImgMobile ?? true) === v} onChange={() => u('heroImgMobile', v)} />
+                {v ? 'Yes' : 'No'}
+              </label>
+            ))}
+          </div>
+        )}
+        {fRow('Mobile BG Opacity',
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <input type="range" min="0" max="1" step="0.01"
+              value={data.heroImgMobileOpacity ?? 0.28}
+              onChange={e => u('heroImgMobileOpacity', parseFloat(e.target.value))}
+              style={{ flex: 1 }} />
+            <span style={{ minWidth: 36, fontSize: '.875rem', fontWeight: 600 }}>{Math.round((data.heroImgMobileOpacity ?? 0.28) * 100)}%</span>
+          </div>
+        )}
         {fRow('Badge Text', inp(data.badge, v => u('badge', v)))}
         {fRow('Headline', inp(data.headline, v => u('headline', v), { textarea: true, rows: 2 }))}
         {fRow('Subtitle', inp(data.sub, v => u('sub', v), { textarea: true, rows: 3 }))}

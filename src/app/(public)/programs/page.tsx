@@ -51,6 +51,7 @@ export default function ProgramsPage() {
   return (
     <>
       <section className="ph">
+        <div className="ph-bg" style={{ backgroundImage: "url('/assets/schools/taipei-bilingual.png')" }} />
         <div className="wrap">
           <h1>{p.title}</h1>
           <p>{p.sub}</p>

@@ -34,6 +34,7 @@ export default function ContactPage() {
   return (
     <>
       <section className="ph">
+        <div className="ph-bg" style={{ backgroundImage: "url('/assets/schools/taoyuan-kindergarten.png')" }} />
         <div className="wrap">
           <h1>{ct.title}</h1>
           <p>{ct.sub}</p>
@@ -46,18 +47,18 @@ export default function ContactPage() {
             {/* Left info panel */}
             <div className="contact-info">
               <div className="contact-item">
-                <span className="contact-label">Email</span>
-                <a className="contact-value" href={`mailto:${ct.email}`}>{ct.email}</a>
+                <span className="contact-info-lbl">Email</span>
+                <a className="contact-info-val" href={`mailto:${ct.email}`}>{ct.email}</a>
               </div>
 
               <div className="contact-item">
-                <span className="contact-label">WhatsApp</span>
-                <span className="contact-value">{ct.whatsapp}</span>
+                <span className="contact-info-lbl">WhatsApp</span>
+                <span className="contact-info-val">{ct.whatsapp}</span>
               </div>
 
               <div className="contact-item">
-                <span className="contact-label">LINE</span>
-                <span className="contact-value">{ct.line}</span>
+                <span className="contact-info-lbl">LINE</span>
+                <span className="contact-info-val">{ct.line}</span>
               </div>
 
               <div className="contact-response">

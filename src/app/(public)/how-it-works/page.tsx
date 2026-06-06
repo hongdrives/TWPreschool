@@ -12,6 +12,7 @@ export default function HowItWorksPage() {
     <>
       {/* Page header */}
       <section className="ph">
+        <div className="ph-bg" style={{ backgroundImage: "url('/assets/schools/nantou-mountain.png')" }} />
         <div className="wrap">
           <h1>{h.title}</h1>
           <p>{h.sub}</p>

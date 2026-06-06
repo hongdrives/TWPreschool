@@ -10,6 +10,7 @@ export default function BlogPage() {
   return (
     <>
       <section className="ph">
+        <div className="ph-bg" style={{ backgroundImage: "url('/assets/schools/hualien-montessori.png')" }} />
         <div className="wrap">
           <h1>{b.title}</h1>
           <p>{b.sub}</p>

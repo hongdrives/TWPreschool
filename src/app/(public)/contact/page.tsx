@@ -20,14 +20,24 @@ export default function ContactPage() {
     subject: '',
     message: '',
   })
-  const [submitted, setSubmitted] = useState<boolean>(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
+    setSubmitting(true)
+    try {
+      await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+    } catch {}
+    setSubmitting(false)
     setSubmitted(true)
   }
 
@@ -100,8 +110,8 @@ export default function ContactPage() {
                     <label htmlFor="contact-message">Message</label>
                     <textarea id="contact-message" name="message" rows={6} value={form.message} onChange={handleChange} required />
                   </div>
-                  <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', marginTop: '4px' }}>
-                    Send Message
+                  <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', marginTop: '4px' }} disabled={submitting}>
+                    {submitting ? 'Sending…' : 'Send Message'}
                   </button>
                 </form>
               )}

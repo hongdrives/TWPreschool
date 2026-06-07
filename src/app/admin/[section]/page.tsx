@@ -11,7 +11,7 @@ type Lang = 'en' | 'zh'
 
 type SectionKey =
   | 'site' | 'home' | 'programs' | 'whyTaiwan' | 'howItWorks'
-  | 'about' | 'faq' | 'contact' | 'partner' | 'blog'
+  | 'about' | 'faq' | 'contact' | 'partner' | 'blog' | 'backup'
 
 const SECTIONS: { key: SectionKey; label: string }[] = [
   { key: 'site',       label: 'Site Settings' },
@@ -24,6 +24,7 @@ const SECTIONS: { key: SectionKey; label: string }[] = [
   { key: 'contact',    label: 'Contact' },
   { key: 'partner',    label: 'Partner' },
   { key: 'blog',       label: 'Blog' },
+  { key: 'backup',     label: '⬇ Backup & Restore' },
 ]
 
 // ---------------------------------------------------------------------------
@@ -862,6 +863,125 @@ function BlogEditor({ data, onChange }: { data: SiteContent['blog']; onChange: (
 }
 
 // ---------------------------------------------------------------------------
+// Backup & Restore
+// ---------------------------------------------------------------------------
+function BackupEditor({ enData, zhData, adminSecret }: {
+  enData: SiteContent | null
+  zhData: SiteContent | null
+  adminSecret: string
+}) {
+  const [restoreStatus, setRestoreStatus] = useState<'idle' | 'ok' | 'err'>('idle')
+  const [restoring, setRestoring] = useState(false)
+  const [confirmData, setConfirmData] = useState<{ lang: string; data: SiteContent }[] | null>(null)
+
+  function handleBackup() {
+    const backup = {
+      version: 1,
+      site: 'Taiwan Preschool Exchange',
+      exported: new Date().toISOString(),
+      content: [
+        { lang: 'en', data: enData },
+        { lang: 'zh', data: zhData },
+      ],
+    }
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `tpe-backup-${new Date().toISOString().slice(0, 10)}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      const json = JSON.parse(await file.text()) as { version?: number; content?: { lang: string; data: SiteContent }[] }
+      if (!Array.isArray(json.content)) throw new Error('Invalid')
+      setConfirmData(json.content)
+    } catch {
+      setRestoreStatus('err')
+      setTimeout(() => setRestoreStatus('idle'), 4000)
+    }
+    e.target.value = ''
+  }
+
+  async function executeRestore() {
+    if (!confirmData) return
+    setRestoring(true)
+    try {
+      for (const entry of confirmData) {
+        const res = await fetch('/api/content', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminSecret}` },
+          body: JSON.stringify({ lang: entry.lang, data: entry.data }),
+        })
+        if (!res.ok) throw new Error('Failed')
+      }
+      setRestoreStatus('ok')
+      setConfirmData(null)
+      setTimeout(() => window.location.reload(), 1500)
+    } catch {
+      setRestoreStatus('err')
+    }
+    setRestoring(false)
+  }
+
+  return (
+    <>
+      <div className="a-card">
+        <div className="a-card-title">Backup Data</div>
+        <p style={{ fontSize: '.875rem', color: '#4b5563', lineHeight: 1.6, marginBottom: '1.25rem' }}>
+          Downloads all site content (English + Chinese) as a JSON file.
+          Keep it safe — you can use it to restore everything later.
+        </p>
+        <button className="a-save-btn" onClick={handleBackup}>⬇ Download Backup (.json)</button>
+      </div>
+
+      <div className="a-card">
+        <div className="a-card-title">Restore Data</div>
+        <p style={{ fontSize: '.875rem', color: '#4b5563', lineHeight: 1.6, marginBottom: '.5rem' }}>
+          Upload a backup file to restore all content.{' '}
+          <strong style={{ color: '#b91c1c' }}>This overwrites all current content — use with caution.</strong>
+        </p>
+        {restoreStatus === 'ok' && <p style={{ color: '#065f46', fontSize: '.875rem', margin: '.75rem 0', fontWeight: 600 }}>✓ Restored successfully — reloading…</p>}
+        {restoreStatus === 'err' && <p style={{ color: '#991b1b', fontSize: '.875rem', margin: '.75rem 0' }}>✗ Failed — invalid file or server error.</p>}
+        <label className="a-reset-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: '.4rem', cursor: 'pointer', marginTop: '.75rem' }}>
+          ⬆ Upload Backup File
+          <input type="file" accept=".json" onChange={handleFileSelect} style={{ display: 'none' }} />
+        </label>
+      </div>
+
+      {confirmData && (
+        <div className="a-modal-overlay" onClick={() => setConfirmData(null)}>
+          <div className="a-modal" onClick={e => e.stopPropagation()}>
+            <h3>Confirm Restore</h3>
+            <p>
+              This will <strong>overwrite all current content</strong> for{' '}
+              {confirmData.map(e => e.lang.toUpperCase()).join(' + ')} with the backup data.
+              <br /><br />
+              This cannot be undone. Are you sure?
+            </p>
+            <div className="a-modal-actions">
+              <button
+                className="a-modal-btn-en"
+                style={{ background: '#dc2626' }}
+                disabled={restoring}
+                onClick={executeRestore}
+              >
+                {restoring ? 'Restoring…' : 'Yes, Restore Now'}
+              </button>
+              <button className="a-modal-btn-cancel" onClick={() => setConfirmData(null)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Main page
 // ---------------------------------------------------------------------------
 export default function AdminSectionPage({ params }: { params: Promise<{ section: string }> }) {
@@ -1088,6 +1208,14 @@ export default function AdminSectionPage({ params }: { params: Promise<{ section
                   <BlogEditor data={data.blog} onChange={v => updateSection('blog', v)} />
                 )}
               </>
+            )}
+
+            {!loading && activeSection === 'backup' && (
+              <BackupEditor
+                enData={enData}
+                zhData={zhData}
+                adminSecret={adminSecret || getCookie('tpe_admin_key')}
+              />
             )}
           </div>
         </main>

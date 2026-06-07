@@ -426,7 +426,7 @@ function SiteEditor({ data, onChange }: { data: SiteContent['site']; onChange: (
   )
 }
 
-function HomeEditor({ data, onChange }: { data: SiteContent['home']; onChange: (v: SiteContent['home']) => void }) {
+function HomeEditor({ data, onChange, adminSecret }: { data: SiteContent['home']; onChange: (v: SiteContent['home']) => void; adminSecret: string }) {
   const u = <K extends keyof SiteContent['home']>(k: K, v: SiteContent['home'][K]) => onChange({ ...data, [k]: v })
 
   const trustText = data.trust.join('\n')
@@ -452,7 +452,7 @@ function HomeEditor({ data, onChange }: { data: SiteContent['home']; onChange: (
     <>
       <div className="a-card">
         <div className="a-card-title">Hero</div>
-        {fRow('Hero Image URL', inp(data.heroImg, v => u('heroImg', v)))}
+        {fRow('Hero Image', <ImageUploader value={data.heroImg} onChange={v => u('heroImg', v)} adminSecret={adminSecret} />)}
         {fRow('Desktop BG Opacity',
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <input type="range" min="0" max="1" step="0.01"
@@ -544,8 +544,12 @@ function HomeEditor({ data, onChange }: { data: SiteContent['home']; onChange: (
 }
 
 // ---------------------------------------------------------------------------
-// Image uploader (used by ProgramsEditor)
+// Image uploader — used by all editors that have image fields
 // ---------------------------------------------------------------------------
+function isStorageUrl(url: string) {
+  return /\/storage\/v1\/object\/public\//.test(url)
+}
+
 function ImageUploader({ value, onChange, adminSecret }: {
   value: string
   onChange: (url: string) => void
@@ -553,48 +557,88 @@ function ImageUploader({ value, onChange, adminSecret }: {
 }) {
   const [uploading, setUploading] = useState(false)
   const [uploadErr, setUploadErr] = useState('')
+  const [urlInput, setUrlInput] = useState(value)
   const fileRef = useRef<HTMLInputElement>(null)
 
-  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
+  // Sync local input when parent updates the value (e.g. after upload)
+  useEffect(() => { setUrlInput(value) }, [value])
+
+  const isExternalPendingImport = /^https?:\/\//i.test(urlInput) && !isStorageUrl(urlInput) && urlInput !== value
+
+  async function doUpload(form: FormData) {
+    // Automatically delete the old file if it lives in our storage
+    if (value && isStorageUrl(value)) form.append('deleteUrl', value)
     setUploading(true)
     setUploadErr('')
     try {
-      const form = new FormData()
-      form.append('file', file)
       const res = await fetch('/api/upload', {
         method: 'POST',
         headers: { Authorization: `Bearer ${adminSecret}` },
         body: form,
       })
       const json = await res.json() as { url?: string; error?: string }
-      if (json.url) onChange(json.url)
+      if (json.url) { onChange(json.url); setUrlInput(json.url) }
       else setUploadErr(json.error ?? 'Upload failed')
     } catch {
       setUploadErr('Upload failed')
     }
     setUploading(false)
+  }
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const form = new FormData()
+    form.append('file', file)
+    await doUpload(form)
     if (fileRef.current) fileRef.current.value = ''
   }
 
+  async function handleImport() {
+    if (!isExternalPendingImport) return
+    const form = new FormData()
+    form.append('importUrl', urlInput)
+    await doUpload(form)
+  }
+
+  function handleUrlBlur() {
+    if (urlInput !== value) onChange(urlInput)
+  }
+
+  const previewSrc = urlInput || value
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
-      {value && (
+      {previewSrc && (
         <img
-          src={value}
+          src={previewSrc}
           alt="Preview"
           style={{ width: '100%', maxWidth: 280, height: 110, objectFit: 'cover', borderRadius: 6, border: '1.5px solid #e5e7eb', display: 'block' }}
+          onError={e => { e.currentTarget.style.display = 'none' }}
+          onLoad={e => { e.currentTarget.style.display = 'block' }}
         />
       )}
-      <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
         <input
           type="text"
           className="f-input"
-          value={value}
-          onChange={e => onChange(e.target.value)}
-          placeholder="Paste URL or click Upload →"
+          style={{ minWidth: 0, flex: 1 }}
+          value={urlInput}
+          onChange={e => setUrlInput(e.target.value)}
+          onBlur={handleUrlBlur}
+          placeholder="Paste URL or use Upload →"
         />
+        {isExternalPendingImport && (
+          <button
+            type="button"
+            className="a-add-btn"
+            onClick={handleImport}
+            disabled={uploading}
+            style={{ whiteSpace: 'nowrap', flexShrink: 0, background: '#eff6ff', color: '#1d4ed8', borderColor: '#bfdbfe' }}
+          >
+            {uploading ? 'Importing…' : '↓ Import'}
+          </button>
+        )}
         <button
           type="button"
           className="a-add-btn"
@@ -837,7 +881,7 @@ function HowItWorksEditor({ data, onChange }: { data: SiteContent['howItWorks'];
   )
 }
 
-function AboutEditor({ data, onChange }: { data: SiteContent['about']; onChange: (v: SiteContent['about']) => void }) {
+function AboutEditor({ data, onChange, adminSecret }: { data: SiteContent['about']; onChange: (v: SiteContent['about']) => void; adminSecret: string }) {
   const u = <K extends keyof SiteContent['about']>(k: K, v: SiteContent['about'][K]) => onChange({ ...data, [k]: v })
 
   function updateVetting(i: number, k: keyof VettingItem, v: string) {
@@ -872,7 +916,7 @@ function AboutEditor({ data, onChange }: { data: SiteContent['about']; onChange:
         {fRow('Subtitle', inp(data.sub, v => u('sub', v), { textarea: true }))}
         {fRow('Mission', inp(data.mission, v => u('mission', v), { textarea: true, rows: 3 }))}
         {fRow('Story', inp(data.story, v => u('story', v), { textarea: true, rows: 3 }))}
-        {fRow('Mission BG Image', inp(data.missionBg, v => u('missionBg', v)))}
+        {fRow('Mission BG Image', <ImageUploader value={data.missionBg} onChange={v => u('missionBg', v)} adminSecret={adminSecret} />)}
       </div>
       <div className="a-card">
         <div className="a-card-title">Vetting Section</div>
@@ -909,7 +953,7 @@ function AboutEditor({ data, onChange }: { data: SiteContent['about']; onChange:
             {fRow('Initials', inp(m.initials, v => updateTeam(i, 'initials', v)))}
             {fRow('Quote', inp(m.quote, v => updateTeam(i, 'quote', v), { textarea: true }))}
             {fRow('Bio', inp(m.bio, v => updateTeam(i, 'bio', v), { textarea: true, rows: 3 }))}
-            {fRow('Photo URL', inp(m.photo ?? '', v => updateTeam(i, 'photo', v)))}
+            {fRow('Photo', <ImageUploader value={m.photo ?? ''} onChange={v => updateTeam(i, 'photo', v)} adminSecret={adminSecret} />)}
           </CollapsibleItem>
         ))}
         <button className="a-add-btn" onClick={addTeam}>+ Add Team Member</button>
@@ -1008,7 +1052,7 @@ function PartnerEditor({ data, onChange }: { data: SiteContent['partner']; onCha
   )
 }
 
-function BlogEditor({ data, onChange }: { data: SiteContent['blog']; onChange: (v: SiteContent['blog']) => void }) {
+function BlogEditor({ data, onChange, adminSecret }: { data: SiteContent['blog']; onChange: (v: SiteContent['blog']) => void; adminSecret: string }) {
   const u = <K extends keyof SiteContent['blog']>(k: K, v: SiteContent['blog'][K]) => onChange({ ...data, [k]: v })
 
   function updatePost(i: number, k: keyof BlogPost, v: string) {
@@ -1034,7 +1078,7 @@ function BlogEditor({ data, onChange }: { data: SiteContent['blog']; onChange: (
             {fRow('Title', inp(p.title, v => updatePost(i, 'title', v)))}
             {fRow('Excerpt', inp(p.excerpt, v => updatePost(i, 'excerpt', v), { textarea: true, rows: 3 }))}
             {fRow('Date', inp(p.date, v => updatePost(i, 'date', v)))}
-            {fRow('Image URL', inp(p.img, v => updatePost(i, 'img', v)))}
+            {fRow('Image', <ImageUploader value={p.img} onChange={v => updatePost(i, 'img', v)} adminSecret={adminSecret} />)}
           </CollapsibleItem>
         ))}
         <button className="a-add-btn" onClick={addPost}>+ Add Post</button>
@@ -1362,7 +1406,7 @@ export default function AdminSectionPage({ params }: { params: Promise<{ section
                   <SiteEditor data={data.site} onChange={v => updateSection('site', v)} />
                 )}
                 {activeSection === 'home' && (
-                  <HomeEditor data={data.home} onChange={v => updateSection('home', v)} />
+                  <HomeEditor data={data.home} onChange={v => updateSection('home', v)} adminSecret={adminSecret || getCookie('tpe_admin_key')} />
                 )}
                 {activeSection === 'programs' && (
                   <ProgramsEditor data={data.programs} onChange={v => updateSection('programs', v)} adminSecret={adminSecret || getCookie('tpe_admin_key')} />
@@ -1374,7 +1418,7 @@ export default function AdminSectionPage({ params }: { params: Promise<{ section
                   <HowItWorksEditor data={data.howItWorks} onChange={v => updateSection('howItWorks', v)} />
                 )}
                 {activeSection === 'about' && (
-                  <AboutEditor data={data.about} onChange={v => updateSection('about', v)} />
+                  <AboutEditor data={data.about} onChange={v => updateSection('about', v)} adminSecret={adminSecret || getCookie('tpe_admin_key')} />
                 )}
                 {activeSection === 'faq' && (
                   <FaqEditor data={data.faq} onChange={v => updateSection('faq', v)} />
@@ -1386,7 +1430,7 @@ export default function AdminSectionPage({ params }: { params: Promise<{ section
                   <PartnerEditor data={data.partner} onChange={v => updateSection('partner', v)} />
                 )}
                 {activeSection === 'blog' && (
-                  <BlogEditor data={data.blog} onChange={v => updateSection('blog', v)} />
+                  <BlogEditor data={data.blog} onChange={v => updateSection('blog', v)} adminSecret={adminSecret || getCookie('tpe_admin_key')} />
                 )}
               </>
             )}

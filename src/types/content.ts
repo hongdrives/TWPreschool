@@ -31,6 +31,7 @@ export interface SiteContent {
     name: string; tagline: string; email: string; domain: string
     logo: string; defaultLang?: string; heroBgOpacity?: number; theme?: 't1' | 't2' | 't3'
     t2PinkIntensity?: number
+    t3PinkInject?: number
     t3Elements?: {
       navCta?: boolean; navLogo?: boolean; navLogoIcon?: boolean; navActiveLink?: boolean
       navPrograms?: boolean; navWhyTaiwan?: boolean; navHowItWorks?: boolean; navAbout?: boolean

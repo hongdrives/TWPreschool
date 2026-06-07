@@ -1,7 +1,7 @@
 import type { SiteContent } from '@/types/content'
 
 export const DEFAULT_EN: SiteContent = {
-  site: { name:"Taiwan Preschool Exchange", tagline:"短期幼稚園交流", email:"contact@preschoolexchange.org", domain:"www.preschoolexchange.org", logo:"/assets/logo.png", heroBgOpacity:0.10, theme:'t1', t2PinkIntensity:30, t3Elements:{} },
+  site: { name:"Taiwan Preschool Exchange", tagline:"短期幼稚園交流", email:"contact@preschoolexchange.org", domain:"www.preschoolexchange.org", logo:"/assets/logo.png", heroBgOpacity:0.10, theme:'t1', t2PinkIntensity:30, t3PinkInject:0, t3Elements:{} },
   nav: {
     links:[{label:"Programs",page:"programs"},{label:"Why Taiwan",page:"why-taiwan"},{label:"How It Works",page:"how-it-works"},{label:"About",page:"about"},{label:"Blog",page:"blog"},{label:"FAQ",page:"faq"},{label:"Contact",page:"contact"}],
     cta:{label:"Apply Now",page:"programs"}
@@ -131,7 +131,7 @@ export const DEFAULT_EN: SiteContent = {
 }
 
 export const DEFAULT_ZH: SiteContent = {
-  site:{ name:"台灣幼兒交流", tagline:"Taiwan Preschool Exchange", email:"contact@preschoolexchange.org", domain:"www.preschoolexchange.org", defaultLang:"en", logo:"/assets/logo.png", heroBgOpacity:0.10, theme:'t1', t2PinkIntensity:30, t3Elements:{} },
+  site:{ name:"台灣幼兒交流", tagline:"Taiwan Preschool Exchange", email:"contact@preschoolexchange.org", domain:"www.preschoolexchange.org", defaultLang:"en", logo:"/assets/logo.png", heroBgOpacity:0.10, theme:'t1', t2PinkIntensity:30, t3PinkInject:0, t3Elements:{} },
   nav:{
     links:[{label:"課程方案",page:"programs"},{label:"為何選台灣",page:"why-taiwan"},{label:"如何運作",page:"how-it-works"},{label:"關於我們",page:"about"},{label:"部落格",page:"blog"},{label:"常見問題",page:"faq"},{label:"聯絡我們",page:"contact"}],
     cta:{label:"立即申請",page:"programs"}

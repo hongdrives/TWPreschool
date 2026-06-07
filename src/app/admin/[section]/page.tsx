@@ -328,8 +328,21 @@ function SiteEditor({ data, onChange }: { data: SiteContent['site']; onChange: (
 
         {theme === 't3' && (
           <div className="a-card">
-            <div className="a-card-title">T3 — Select Pink Elements</div>
-            <p className="a-theme-hint" style={{ marginBottom: '.75rem' }}>Tick each element you want to turn pink:</p>
+            <div className="a-card-title">T3 — Green &amp; Pink (select elements)</div>
+            {fRow('Pink Injection',
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <input type="range" min="0" max="100" step="1"
+                  value={data.t3PinkInject ?? 0}
+                  onChange={e => onChange({ ...data, t3PinkInject: parseInt(e.target.value) })}
+                  style={{ flex: 1 }} />
+                <span style={{ minWidth: 36, fontSize: '.875rem', fontWeight: 600 }}>{data.t3PinkInject ?? 0}%</span>
+              </div>
+            )}
+            <p className="a-theme-hint" style={{ marginBottom: '1rem' }}>
+              Blends pink into all green gradient areas (hero, CTA band).<br />
+              0% = pure green · 50% = half-pink · 100% = fully pink gradients
+            </p>
+            <p className="a-theme-hint" style={{ marginBottom: '.75rem' }}>Tick each individual element you also want to turn pink:</p>
             <div className="a-check-list">
               {T3_ELEMENTS.map(({ key, label, desc }) => (
                 <label key={key} className="a-check-item">
@@ -886,7 +899,7 @@ export default function AdminSectionPage({ params }: { params: Promise<{ section
   function applyPercentDefaults(d: SiteContent): SiteContent {
     return {
       ...d,
-      site: { ...d.site, heroBgOpacity: 0.10, t2PinkIntensity: 30 },
+      site: { ...d.site, heroBgOpacity: 0.10, t2PinkIntensity: 30, t3PinkInject: 0 },
       home: { ...d.home, heroImgOpacity: 0.95, heroImgMobileOpacity: 0.28, heroImgFade: 72 },
     }
   }

@@ -292,6 +292,11 @@ footer{background:var(--ink);color:rgba(255,255,255,.7);padding:52px 0 30px}
 [data-theme="t2"] .blog-tag{color:var(--pink)}
 [data-theme="t2"] .nav-logo{color:var(--pink-dk)}
 
+/* ── THEME: T3 — Pink Injection (blends pink into all green gradients) ── */
+[data-theme="t3"] .hero{background:linear-gradient(135deg,#2E4E50 0%,var(--t3-pink-inject,rgba(139,61,107,0)) 30%,var(--teal-dk) 62%,#5A8788 100%)}
+[data-theme="t3"] .hero::after{background:radial-gradient(circle,rgba(232,117,154,.15) 0%,transparent 68%)}
+[data-theme="t3"] .cta-band{background:linear-gradient(135deg,#2E4E50 0%,var(--t3-pink-inject,rgba(139,61,107,0)) 42%,var(--teal-dk) 100%)}
+
 /* ── THEME: T3 — per-element pink via data-t3 attribute ──────────────── */
 /* Nav */
 [data-t3~="navCta"] .nav-cta{background:var(--pink)!important}

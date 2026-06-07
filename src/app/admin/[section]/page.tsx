@@ -1381,8 +1381,23 @@ export default function AdminSectionPage({ params }: { params: Promise<{ section
   // Other-language data — used to sync image fields across EN ↔ CN
   const otherData = lang === 'en' ? zhData : enData
   function updateOtherSection<K extends keyof SiteContent>(key: K, val: SiteContent[K]) {
-    if (lang === 'en') setZhData(prev => prev ? { ...prev, [key]: val } : prev)
-    else setEnData(prev => prev ? { ...prev, [key]: val } : prev)
+    const currentOther = lang === 'en' ? zhData : enData
+    if (!currentOther) return
+    const updated: SiteContent = { ...currentOther, [key]: val }
+    // Update in-memory state for immediate UI consistency
+    if (lang === 'en') setZhData(updated)
+    else setEnData(updated)
+    // Auto-persist to Supabase so the other language is saved without the user
+    // needing to switch language tabs and click Save manually
+    const otherLang = lang === 'en' ? 'zh' : 'en'
+    const secret = adminSecret || getCookie('tpe_admin_key')
+    if (secret) {
+      fetch('/api/content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${secret}` },
+        body: JSON.stringify({ lang: otherLang, data: updated }),
+      }).catch(() => {})
+    }
   }
 
   const saveLabel = lang === 'en' ? 'Save All — EN Site' : 'Save All — 繁體中文'

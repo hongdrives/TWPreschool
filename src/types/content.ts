@@ -30,6 +30,7 @@ export interface SiteContent {
   site: {
     name: string; tagline: string; email: string; domain: string
     logo: string; defaultLang?: string; heroBgOpacity?: number; theme?: 't1' | 't2' | 't3'
+    customPink?: string
     t2PinkIntensity?: number
     t3PinkInject?: number
     t3Elements?: {

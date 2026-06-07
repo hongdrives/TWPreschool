@@ -280,7 +280,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.7);padding:52px 0 30px}
 
 /* ── THEME: T2 — Green & Pink (intensity via --t2-pink-stop CSS var) ─── */
 [data-theme="t2"] .hero{background:linear-gradient(135deg,#2E4E50 0%,var(--t2-pink-stop,rgba(139,61,107,.3)) 30%,var(--teal-dk) 62%,#5A8788 100%)}
-[data-theme="t2"] .hero::after{background:radial-gradient(circle,rgba(232,117,154,.18) 0%,transparent 68%)}
+[data-theme="t2"] .hero::after{background:radial-gradient(circle,var(--pink-a18,rgba(232,117,154,.18)) 0%,transparent 68%)}
 [data-theme="t2"] .cta-band{background:linear-gradient(135deg,#2E4E50 0%,var(--t2-pink-stop,rgba(139,61,107,.3)) 42%,var(--teal-dk) 100%)}
 [data-theme="t2"] .nav-cta{background:var(--pink)!important}
 [data-theme="t2"] .nav-cta:hover{background:var(--pink-dk)!important}
@@ -295,7 +295,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.7);padding:52px 0 30px}
 /* ── THEME: T3 — Pink Injection (blends pink into all green gradients) ── */
 /* Fallback is #4A7475 (teal-dk) so 0% = pure green, no white artifact   */
 [data-theme="t3"] .hero{background:linear-gradient(135deg,#2E4E50 0%,var(--t3-pink-inject,#4A7475) 30%,var(--teal-dk) 62%,#5A8788 100%)}
-[data-theme="t3"] .hero::after{background:radial-gradient(circle,rgba(232,117,154,.15) 0%,transparent 68%)}
+[data-theme="t3"] .hero::after{background:radial-gradient(circle,var(--pink-a18,rgba(232,117,154,.18)) 0%,transparent 68%)}
 [data-theme="t3"] .cta-band{background:linear-gradient(135deg,#2E4E50 0%,var(--t3-pink-inject,#4A7475) 42%,var(--teal-dk) 100%)}
 
 /* ── THEME: T3 — per-element pink via data-t3 attribute ──────────────── */
@@ -318,12 +318,12 @@ footer{background:var(--ink);color:rgba(255,255,255,.7);padding:52px 0 30px}
 [data-t3~="btnOutline"] .btn-outline{border-color:var(--pink);color:var(--pink)}
 [data-t3~="btnOutline"] .btn-outline:hover{background:var(--pink-xl)}
 /* Hero */
-[data-t3~="heroBadge"] .hero-badge{background:rgba(232,117,154,.2);border-color:rgba(232,117,154,.5)}
+[data-t3~="heroBadge"] .hero-badge{background:var(--pink-a20,rgba(232,117,154,.20));border-color:var(--pink-a50,rgba(232,117,154,.50))}
 [data-t3~="heroCta1"] .hero-actions .btn-white{background:var(--pink);color:#fff}
 [data-t3~="heroCta1"] .hero-actions .btn-white:hover{background:var(--pink-dk)}
-[data-t3~="heroCta2"] .hero-actions .btn-ghost{background:rgba(232,117,154,.2);border-color:rgba(232,117,154,.6)}
+[data-t3~="heroCta2"] .hero-actions .btn-ghost{background:var(--pink-a20,rgba(232,117,154,.20));border-color:var(--pink-a60,rgba(232,117,154,.60))}
 [data-t3~="heroCta2"] .hero-actions .btn-ghost:hover{background:rgba(232,117,154,.35)}
-[data-t3~="trustItems"] .trust-check{background:rgba(232,117,154,.25)}
+[data-t3~="trustItems"] .trust-check{background:var(--pink-a25,rgba(232,117,154,.25))}
 /* Section labels */
 [data-t3~="sectionLabel"] .section-label{color:var(--pink)}
 /* Numbers */
@@ -339,4 +339,4 @@ footer{background:var(--ink);color:rgba(255,255,255,.7);padding:52px 0 30px}
 /* Other */
 [data-t3~="faqIcon"] .faq-icon{color:var(--pink)}
 [data-t3~="teamRole"] .team-role{color:var(--pink-dk)}
-[data-t3~="ctaBand"] .cta-band{background:linear-gradient(135deg,#3A2640 0%,#8B3D6B 42%,var(--teal-dk) 100%)}
+[data-t3~="ctaBand"] .cta-band{background:linear-gradient(135deg,#3A2640 0%,var(--pink-dk,#8B3D6B) 42%,var(--teal-dk) 100%)}

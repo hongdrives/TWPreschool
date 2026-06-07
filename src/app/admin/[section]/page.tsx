@@ -251,6 +251,45 @@ const T3_ELEMENTS: { key: keyof NonNullable<SiteContent['site']['t3Elements']>; 
   { key: 'ctaBand',         label: 'CTA Band — Background',            desc: 'Full-width call-to-action band at page bottoms — changes gradient to include pink' },
 ]
 
+const DEFAULT_PINK = '#E8759A'
+
+function PinkColorPicker({ value, onChange }: { value: string | undefined; onChange: (v: string | undefined) => void }) {
+  const effective = (value && /^#[0-9a-fA-F]{6}$/i.test(value)) ? value : DEFAULT_PINK
+  const [text, setText] = useState(effective)
+  useEffect(() => { setText(effective) }, [effective])
+
+  function commit(v: string) {
+    if (/^#[0-9a-fA-F]{6}$/i.test(v)) onChange(v.toLowerCase() === DEFAULT_PINK.toLowerCase() ? undefined : v)
+  }
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+      <input
+        type="color"
+        value={effective}
+        onChange={e => { setText(e.target.value); commit(e.target.value) }}
+        style={{ width: 36, height: 32, padding: 2, border: '1.5px solid #e5e7eb', borderRadius: 6, cursor: 'pointer', flexShrink: 0 }}
+      />
+      <input
+        type="text"
+        className="f-input sm"
+        value={text}
+        onChange={e => { setText(e.target.value); commit(e.target.value) }}
+        onBlur={() => setText(effective)}
+        placeholder={DEFAULT_PINK}
+        style={{ width: 96 }}
+      />
+      <button
+        onClick={() => { setText(DEFAULT_PINK); onChange(undefined) }}
+        style={{ padding: '.35rem .65rem', background: '#fff', color: '#6b7280', border: '1.5px solid #e5e7eb', borderRadius: 6, fontSize: '.75rem', cursor: 'pointer', whiteSpace: 'nowrap' }}
+      >
+        Reset
+      </button>
+      {value && <span style={{ fontSize: '.7rem', color: '#e8759a', fontWeight: 600 }}>Custom ●</span>}
+    </div>
+  )
+}
+
 function SiteEditor({ data, onChange }: { data: SiteContent['site']; onChange: (v: SiteContent['site']) => void }) {
   const u = (k: keyof SiteContent['site'], v: string) => onChange({ ...data, [k]: v })
   const opacity = data.heroBgOpacity ?? 0.10
@@ -310,6 +349,7 @@ function SiteEditor({ data, onChange }: { data: SiteContent['site']; onChange: (
         {theme === 't2' && (
           <div className="a-card">
             <div className="a-card-title">T2 — Green &amp; Pink Settings</div>
+            {fRow('Pink Colour', <PinkColorPicker value={data.customPink} onChange={v => onChange({ ...data, customPink: v })} />)}
             {fRow('Pink Intensity',
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <input type="range" min="0" max="100" step="1"
@@ -329,6 +369,7 @@ function SiteEditor({ data, onChange }: { data: SiteContent['site']; onChange: (
         {theme === 't3' && (
           <div className="a-card">
             <div className="a-card-title">T3 — Green &amp; Pink (select elements)</div>
+            {fRow('Pink Colour', <PinkColorPicker value={data.customPink} onChange={v => onChange({ ...data, customPink: v })} />)}
             {fRow('Pink Injection',
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <input type="range" min="0" max="100" step="1"

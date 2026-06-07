@@ -223,6 +223,8 @@ const T3_ELEMENTS: { key: keyof NonNullable<SiteContent['site']['t3Elements']>; 
   { key: 'btnOutline',      label: 'Buttons — Outline style',           desc: 'All outline/bordered buttons used as secondary actions' },
   // Hero
   { key: 'heroBadge',       label: 'Hero — Badge pill',                 desc: 'The small rounded badge above the hero headline ("Curated…")' },
+  { key: 'heroCta1',        label: 'Hero — CTA Button 1 (primary)',     desc: 'The first/main CTA button in the hero section (e.g. "View Programs")' },
+  { key: 'heroCta2',        label: 'Hero — CTA Button 2 (secondary)',   desc: 'The second/ghost CTA button in the hero section (e.g. "Learn More")' },
   { key: 'trustItems',      label: 'Hero — Trust checkmarks',           desc: 'The circular checkmarks in the trust strip below the hero CTAs' },
   // Section labels
   { key: 'sectionLabel',    label: 'Sections — Label text',            desc: 'Small uppercase labels above every section title across all pages' },

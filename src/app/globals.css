@@ -306,6 +306,10 @@ footer{background:var(--ink);color:rgba(255,255,255,.7);padding:52px 0 30px}
 [data-t3~="btnOutline"] .btn-outline:hover{background:var(--pink-xl)}
 /* Hero */
 [data-t3~="heroBadge"] .hero-badge{background:rgba(232,117,154,.2);border-color:rgba(232,117,154,.5)}
+[data-t3~="heroCta1"] .hero-actions .btn-white{background:var(--pink);color:#fff}
+[data-t3~="heroCta1"] .hero-actions .btn-white:hover{background:var(--pink-dk)}
+[data-t3~="heroCta2"] .hero-actions .btn-ghost{background:rgba(232,117,154,.2);border-color:rgba(232,117,154,.6)}
+[data-t3~="heroCta2"] .hero-actions .btn-ghost:hover{background:rgba(232,117,154,.35)}
 [data-t3~="trustItems"] .trust-check{background:rgba(232,117,154,.25)}
 /* Section labels */
 [data-t3~="sectionLabel"] .section-label{color:var(--pink)}

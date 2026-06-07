@@ -33,7 +33,7 @@ export interface SiteContent {
     t2PinkIntensity?: number
     t3Elements?: {
       navCta?: boolean; navLogo?: boolean; navLogoIcon?: boolean; navActiveLink?: boolean
-      heroBadge?: boolean; trustItems?: boolean
+      heroBadge?: boolean; heroCta1?: boolean; heroCta2?: boolean; trustItems?: boolean
       btnPrimary?: boolean; btnOutline?: boolean
       sectionLabel?: boolean
       statNumbers?: boolean; stepNumbers?: boolean; hiwNumbers?: boolean; vettingNumbers?: boolean; whyStats?: boolean

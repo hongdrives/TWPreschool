@@ -293,15 +293,33 @@ footer{background:var(--ink);color:rgba(255,255,255,.7);padding:52px 0 30px}
 [data-theme="t2"] .nav-logo{color:var(--pink-dk)}
 
 /* ── THEME: T3 — per-element pink via data-t3 attribute ──────────────── */
+/* Nav */
 [data-t3~="navCta"] .nav-cta{background:var(--pink)!important}
 [data-t3~="navCta"] .nav-cta:hover{background:var(--pink-dk)!important}
+[data-t3~="navLogo"] .nav-logo{color:var(--pink-dk)}
+[data-t3~="navLogoIcon"] .nav-logo-icon{background:linear-gradient(135deg,var(--pink),var(--pink-dk))}
+[data-t3~="navActiveLink"] .nav-links button.active{color:var(--pink-dk);background:var(--pink-xl)}
+/* Buttons */
 [data-t3~="btnPrimary"] .btn-primary{background:var(--pink)}
 [data-t3~="btnPrimary"] .btn-primary:hover{background:var(--pink-dk)}
+[data-t3~="btnOutline"] .btn-outline{border-color:var(--pink);color:var(--pink)}
+[data-t3~="btnOutline"] .btn-outline:hover{background:var(--pink-xl)}
+/* Hero */
+[data-t3~="heroBadge"] .hero-badge{background:rgba(232,117,154,.2);border-color:rgba(232,117,154,.5)}
+[data-t3~="trustItems"] .trust-check{background:rgba(232,117,154,.25)}
+/* Section labels */
+[data-t3~="sectionLabel"] .section-label{color:var(--pink)}
+/* Numbers */
+[data-t3~="statNumbers"] .stat-n{color:var(--pink-dk)}
+[data-t3~="stepNumbers"] .step-n{color:var(--pink)}
+[data-t3~="hiwNumbers"] .hiw-num{color:var(--pink)}
+[data-t3~="vettingNumbers"] .vet-n{color:var(--pink)}
+[data-t3~="whyStats"] .tw-stat{color:var(--pink-dk)}
+/* Tags & badges */
 [data-t3~="tags"] .tag{background:var(--blush);color:var(--pink-dk)}
 [data-t3~="cardBadge"] .card-badge{background:var(--blush);color:var(--pink-dk)}
 [data-t3~="blogTag"] .blog-tag{color:var(--pink)}
-[data-t3~="statNumbers"] .stat-n{color:var(--pink-dk)}
-[data-t3~="trustItems"] .trust-check{background:rgba(232,117,154,.25)}
-[data-t3~="sectionLabel"] .section-label{color:var(--pink)}
+/* Other */
+[data-t3~="faqIcon"] .faq-icon{color:var(--pink)}
+[data-t3~="teamRole"] .team-role{color:var(--pink-dk)}
 [data-t3~="ctaBand"] .cta-band{background:linear-gradient(135deg,#3A2640 0%,#8B3D6B 42%,var(--teal-dk) 100%)}
-[data-t3~="navLogo"] .nav-logo{color:var(--pink-dk)}

@@ -91,9 +91,12 @@ html,body{margin:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,'Seg
 /* Site settings two-col */
 .a-site-cols{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;align-items:start}
 @media(max-width:860px){.a-site-cols{grid-template-columns:1fr}}
-.a-check-list{display:flex;flex-direction:column;gap:.5rem;margin-top:.25rem}
-.a-check-item{display:flex;align-items:center;gap:.5rem;font-size:.8125rem;color:#374151;cursor:pointer}
-.a-check-item input{width:15px;height:15px;cursor:pointer;accent-color:#e8759a}
+.a-check-list{display:flex;flex-direction:column;gap:.25rem;margin-top:.25rem}
+.a-check-item{display:flex;align-items:flex-start;gap:.5rem;font-size:.8125rem;color:#374151;cursor:pointer;padding:.3rem .5rem;border-radius:6px;transition:background .1s}
+.a-check-item:hover{background:#f9fafb}
+.a-check-item input{width:15px;height:15px;cursor:pointer;accent-color:#e8759a;margin-top:2px;flex-shrink:0}
+.a-check-label{display:flex;flex-direction:column;gap:2px}
+.a-check-desc{font-size:.7rem;color:#9ca3af;line-height:1.4}
 .a-theme-hint{font-size:.75rem;color:#9ca3af;margin-top:.75rem;line-height:1.5}
 /* Reset modal */
 .a-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem}
@@ -209,17 +212,34 @@ function CollapsibleItem({
 // Section editors
 // ---------------------------------------------------------------------------
 
-const T3_ELEMENTS: { key: keyof NonNullable<SiteContent['site']['t3Elements']>; label: string }[] = [
-  { key: 'navCta',      label: 'Apply Now button' },
-  { key: 'btnPrimary',  label: 'Primary buttons' },
-  { key: 'tags',        label: 'Feature tags' },
-  { key: 'cardBadge',   label: 'Card badges' },
-  { key: 'blogTag',     label: 'Blog tags' },
-  { key: 'statNumbers', label: 'Stats numbers' },
-  { key: 'trustItems',  label: 'Trust check items' },
-  { key: 'sectionLabel',label: 'Section labels' },
-  { key: 'ctaBand',     label: 'CTA band background' },
-  { key: 'navLogo',     label: 'Nav logo colour' },
+const T3_ELEMENTS: { key: keyof NonNullable<SiteContent['site']['t3Elements']>; label: string; desc: string }[] = [
+  // Nav
+  { key: 'navCta',          label: 'Nav — "Apply Now" button',          desc: 'The CTA button on the right of the top navigation bar' },
+  { key: 'navLogo',         label: 'Nav — Logo text colour',            desc: 'The site name text next to the logo icon in the nav' },
+  { key: 'navLogoIcon',     label: 'Nav — Logo icon square',            desc: 'The small square icon block that sits left of the site name' },
+  { key: 'navActiveLink',   label: 'Nav — Active page link',            desc: 'The currently-active page link highlight in the nav bar' },
+  // Buttons
+  { key: 'btnPrimary',      label: 'Buttons — Primary (filled)',        desc: 'All solid primary buttons site-wide (hero CTAs, page CTAs, etc.)' },
+  { key: 'btnOutline',      label: 'Buttons — Outline style',           desc: 'All outline/bordered buttons used as secondary actions' },
+  // Hero
+  { key: 'heroBadge',       label: 'Hero — Badge pill',                 desc: 'The small rounded badge above the hero headline ("Curated…")' },
+  { key: 'trustItems',      label: 'Hero — Trust checkmarks',           desc: 'The circular checkmarks in the trust strip below the hero CTAs' },
+  // Section labels
+  { key: 'sectionLabel',    label: 'Sections — Label text',            desc: 'Small uppercase labels above every section title across all pages' },
+  // Numbers
+  { key: 'statNumbers',     label: 'Stats bar — Numbers',              desc: 'The large stat numbers below the hero (4th, 98%, etc.)' },
+  { key: 'stepNumbers',     label: 'Home — Step numbers',              desc: 'Large step numbers in the "How It Works" section on the home page' },
+  { key: 'hiwNumbers',      label: 'How It Works page — Step numbers', desc: 'Large step numbers on the dedicated How It Works page' },
+  { key: 'vettingNumbers',  label: 'About — Vetting numbers',          desc: 'Large numbers in the school vetting section on the About page' },
+  { key: 'whyStats',        label: 'Why Taiwan — Card stats',          desc: 'The large stat values on the Why Taiwan feature cards' },
+  // Tags & badges
+  { key: 'tags',            label: 'Cards — Feature tags',             desc: 'Small feature tags on program cards (e.g. "English", "Bilingual")' },
+  { key: 'cardBadge',       label: 'Cards — Category badge',           desc: '"Featured" / category badge at the top of program cards' },
+  { key: 'blogTag',         label: 'Blog — Category label',            desc: 'Category label text above blog post titles' },
+  // Other
+  { key: 'faqIcon',         label: 'FAQ — Expand icon',                desc: 'The + / × icon that opens and closes FAQ accordion items' },
+  { key: 'teamRole',        label: 'Team — Role label',                desc: 'The uppercase role/title text on team member cards' },
+  { key: 'ctaBand',         label: 'CTA Band — Background',            desc: 'Full-width call-to-action band at page bottoms — changes gradient to include pink' },
 ]
 
 function SiteEditor({ data, onChange }: { data: SiteContent['site']; onChange: (v: SiteContent['site']) => void }) {
@@ -302,14 +322,17 @@ function SiteEditor({ data, onChange }: { data: SiteContent['site']; onChange: (
             <div className="a-card-title">T3 — Select Pink Elements</div>
             <p className="a-theme-hint" style={{ marginBottom: '.75rem' }}>Tick each element you want to turn pink:</p>
             <div className="a-check-list">
-              {T3_ELEMENTS.map(({ key, label }) => (
+              {T3_ELEMENTS.map(({ key, label, desc }) => (
                 <label key={key} className="a-check-item">
                   <input
                     type="checkbox"
                     checked={!!(data.t3Elements?.[key])}
                     onChange={e => toggleT3(key, e.target.checked)}
                   />
-                  {label}
+                  <div className="a-check-label">
+                    <span>{label}</span>
+                    <span className="a-check-desc">{desc}</span>
+                  </div>
                 </label>
               ))}
             </div>

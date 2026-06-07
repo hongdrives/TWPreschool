@@ -32,9 +32,14 @@ export interface SiteContent {
     logo: string; defaultLang?: string; heroBgOpacity?: number; theme?: 't1' | 't2' | 't3'
     t2PinkIntensity?: number
     t3Elements?: {
-      navCta?: boolean; btnPrimary?: boolean; tags?: boolean; cardBadge?: boolean
-      blogTag?: boolean; statNumbers?: boolean; trustItems?: boolean
-      sectionLabel?: boolean; ctaBand?: boolean; navLogo?: boolean
+      navCta?: boolean; navLogo?: boolean; navLogoIcon?: boolean; navActiveLink?: boolean
+      heroBadge?: boolean; trustItems?: boolean
+      btnPrimary?: boolean; btnOutline?: boolean
+      sectionLabel?: boolean
+      statNumbers?: boolean; stepNumbers?: boolean; hiwNumbers?: boolean; vettingNumbers?: boolean; whyStats?: boolean
+      tags?: boolean; cardBadge?: boolean; blogTag?: boolean
+      faqIcon?: boolean; teamRole?: boolean
+      ctaBand?: boolean
     }
   }
   nav: { links: NavLink[]; cta: CtaLink }

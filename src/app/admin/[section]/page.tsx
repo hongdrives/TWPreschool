@@ -251,41 +251,45 @@ const T3_ELEMENTS: { key: keyof NonNullable<SiteContent['site']['t3Elements']>; 
   { key: 'ctaBand',         label: 'CTA Band — Background',            desc: 'Full-width call-to-action band at page bottoms — changes gradient to include pink' },
 ]
 
-const DEFAULT_PINK = '#E8759A'
-
-function PinkColorPicker({ value, onChange }: { value: string | undefined; onChange: (v: string | undefined) => void }) {
-  const effective = (value && /^#[0-9a-fA-F]{6}$/i.test(value)) ? value : DEFAULT_PINK
+function ColorPicker({ value, defaultColor, onChange }: {
+  value: string | undefined
+  defaultColor: string
+  onChange: (v: string | undefined) => void
+}) {
+  const effective = (value && /^#[0-9a-fA-F]{6}$/i.test(value)) ? value : defaultColor
   const [text, setText] = useState(effective)
   useEffect(() => { setText(effective) }, [effective])
 
   function commit(v: string) {
-    if (/^#[0-9a-fA-F]{6}$/i.test(v)) onChange(v.toLowerCase() === DEFAULT_PINK.toLowerCase() ? undefined : v)
+    if (/^#[0-9a-fA-F]{6}$/i.test(v)) onChange(v.toLowerCase() === defaultColor.toLowerCase() ? undefined : v)
   }
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
       <input
         type="color"
         value={effective}
         onChange={e => { setText(e.target.value); commit(e.target.value) }}
         style={{ width: 36, height: 32, padding: 2, border: '1.5px solid #e5e7eb', borderRadius: 6, cursor: 'pointer', flexShrink: 0 }}
       />
-      <input
-        type="text"
-        className="f-input sm"
-        value={text}
-        onChange={e => { setText(e.target.value); commit(e.target.value) }}
-        onBlur={() => setText(effective)}
-        placeholder={DEFAULT_PINK}
-        style={{ width: 96 }}
-      />
-      <button
-        onClick={() => { setText(DEFAULT_PINK); onChange(undefined) }}
-        style={{ padding: '.35rem .65rem', background: '#fff', color: '#6b7280', border: '1.5px solid #e5e7eb', borderRadius: 6, fontSize: '.75rem', cursor: 'pointer', whiteSpace: 'nowrap' }}
-      >
-        Reset
-      </button>
-      {value && <span style={{ fontSize: '.7rem', color: '#e8759a', fontWeight: 600 }}>Custom ●</span>}
+      {/* Hex input + Reset grouped as one unit */}
+      <div style={{ display: 'flex', border: '1.5px solid #e5e7eb', borderRadius: 6, overflow: 'hidden', flexShrink: 0 }}>
+        <input
+          type="text"
+          value={text}
+          onChange={e => { setText(e.target.value); commit(e.target.value) }}
+          onBlur={() => setText(effective)}
+          placeholder={defaultColor}
+          style={{ width: 88, padding: '.375rem .5rem', fontSize: '.8125rem', border: 'none', outline: 'none', fontFamily: 'monospace', color: '#111', background: '#fff' }}
+        />
+        <button
+          onClick={() => { setText(defaultColor); onChange(undefined) }}
+          style={{ padding: '.375rem .65rem', background: '#f3f4f6', color: '#6b7280', border: 'none', borderLeft: '1px solid #e5e7eb', fontSize: '.75rem', cursor: 'pointer', whiteSpace: 'nowrap' }}
+        >
+          Reset
+        </button>
+      </div>
+      {value && <span style={{ fontSize: '.7rem', color: effective, fontWeight: 700 }}>●</span>}
     </div>
   )
 }
@@ -325,6 +329,7 @@ function SiteEditor({ data, onChange }: { data: SiteContent['site']; onChange: (
             <span style={{ minWidth: 36, fontSize: '.875rem', color: '#374151', fontWeight: 600 }}>{Math.round(opacity * 100)}%</span>
           </div>
         )}
+        {fRow('Green Colour', <ColorPicker value={data.customGreen} defaultColor="#619394" onChange={v => onChange({ ...data, customGreen: v })} />)}
         {fRow('Default Language',
           <div className="f-radio-group">
             {(['en', 'zh'] as const).map(l => (
@@ -349,7 +354,7 @@ function SiteEditor({ data, onChange }: { data: SiteContent['site']; onChange: (
         {theme === 't2' && (
           <div className="a-card">
             <div className="a-card-title">T2 — Green &amp; Pink Settings</div>
-            {fRow('Pink Colour', <PinkColorPicker value={data.customPink} onChange={v => onChange({ ...data, customPink: v })} />)}
+            {fRow('Pink Colour', <ColorPicker value={data.customPink} defaultColor="#E8759A" onChange={v => onChange({ ...data, customPink: v })} />)}
             {fRow('Pink Intensity',
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <input type="range" min="0" max="100" step="1"
@@ -369,7 +374,7 @@ function SiteEditor({ data, onChange }: { data: SiteContent['site']; onChange: (
         {theme === 't3' && (
           <div className="a-card">
             <div className="a-card-title">T3 — Green &amp; Pink (select elements)</div>
-            {fRow('Pink Colour', <PinkColorPicker value={data.customPink} onChange={v => onChange({ ...data, customPink: v })} />)}
+            {fRow('Pink Colour', <ColorPicker value={data.customPink} defaultColor="#E8759A" onChange={v => onChange({ ...data, customPink: v })} />)}
             {fRow('Pink Injection',
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <input type="range" min="0" max="100" step="1"
@@ -771,7 +776,7 @@ function ContactEditor({ data, onChange }: { data: SiteContent['contact']; onCha
       {fRow('Title', inp(data.title, v => u('title', v)))}
       {fRow('Subtitle', inp(data.sub, v => u('sub', v), { textarea: true }))}
       {fRow('Email', inp(data.email, v => u('email', v)))}
-      {fRow('WhatsApp Label', inp(data.whatsapp, v => u('whatsapp', v)))}
+      {fRow('WhatsApp Number', inp(data.whatsapp, v => u('whatsapp', v), { placeholder: '+60123456789' }))}
       {fRow('LINE', inp(data.line, v => u('line', v)))}
       {fRow('Response Time', inp(data.response, v => u('response', v)))}
       {fRow('Form Title', inp(data.formTitle, v => u('formTitle', v)))}

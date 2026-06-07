@@ -44,23 +44,37 @@ export function LangProvider({ children }: { children: ReactNode }) {
     const theme = C.site.theme ?? 't1'
     document.documentElement.setAttribute('data-theme', theme)
 
+    // Resolve custom green — default #619394 = rgb(97,147,148)
+    const ghex = C.site.customGreen
+    let gr = 97, gg = 147, gb = 148
+    if (ghex && /^#[0-9a-fA-F]{6}$/i.test(ghex)) {
+      gr = parseInt(ghex.slice(1, 3), 16)
+      gg = parseInt(ghex.slice(3, 5), 16)
+      gb = parseInt(ghex.slice(5, 7), 16)
+    }
+    const grDk = Math.max(0, Math.round(gr * 0.78))
+    const ggDk = Math.max(0, Math.round(gg * 0.78))
+    const gbDk = Math.max(0, Math.round(gb * 0.78))
+    document.documentElement.style.setProperty('--teal',    `rgb(${gr},${gg},${gb})`)
+    document.documentElement.style.setProperty('--teal-dk', `rgb(${grDk},${ggDk},${gbDk})`)
+    document.documentElement.style.setProperty('--teal-lt', `rgb(${Math.round(gr*0.12+255*0.88)},${Math.round(gg*0.12+255*0.88)},${Math.round(gb*0.12+255*0.88)})`)
+    document.documentElement.style.setProperty('--teal-xl', `rgb(${Math.round(gr*0.07+255*0.93)},${Math.round(gg*0.07+255*0.93)},${Math.round(gb*0.07+255*0.93)})`)
+
     // Resolve custom pink — default #E8759A = rgb(232,117,154)
-    const hex = C.site.customPink
+    const phex = C.site.customPink
     let pr = 232, pg = 117, pb = 154
-    if (hex && /^#[0-9a-fA-F]{6}$/i.test(hex)) {
-      pr = parseInt(hex.slice(1, 3), 16)
-      pg = parseInt(hex.slice(3, 5), 16)
-      pb = parseInt(hex.slice(5, 7), 16)
+    if (phex && /^#[0-9a-fA-F]{6}$/i.test(phex)) {
+      pr = parseInt(phex.slice(1, 3), 16)
+      pg = parseInt(phex.slice(3, 5), 16)
+      pb = parseInt(phex.slice(5, 7), 16)
     }
     const rDk = Math.max(0, Math.round(pr * 0.85))
     const gDk = Math.max(0, Math.round(pg * 0.85))
     const bDk = Math.max(0, Math.round(pb * 0.85))
-    // Core pink palette — overrides CSS :root values so every var(--pink*) updates everywhere
     document.documentElement.style.setProperty('--pink',    `rgb(${pr},${pg},${pb})`)
     document.documentElement.style.setProperty('--pink-dk', `rgb(${rDk},${gDk},${bDk})`)
     document.documentElement.style.setProperty('--pink-xl', `rgb(${Math.round(pr*0.06+255*0.94)},${Math.round(pg*0.06+255*0.94)},${Math.round(pb*0.06+255*0.94)})`)
     document.documentElement.style.setProperty('--blush',   `rgb(${Math.round(pr*0.20+255*0.80)},${Math.round(pg*0.20+255*0.80)},${Math.round(pb*0.20+255*0.80)})`)
-    // Alpha variants for rgba uses in CSS
     document.documentElement.style.setProperty('--pink-a18', `rgba(${pr},${pg},${pb},.18)`)
     document.documentElement.style.setProperty('--pink-a20', `rgba(${pr},${pg},${pb},.20)`)
     document.documentElement.style.setProperty('--pink-a25', `rgba(${pr},${pg},${pb},.25)`)
@@ -77,12 +91,12 @@ export function LangProvider({ children }: { children: ReactNode }) {
     if (active) document.documentElement.setAttribute('data-t3', active)
     else document.documentElement.removeAttribute('data-t3')
 
-    // T3: pink injection — interpolate from teal-dk (74,116,117) to custom pink-dk, fully opaque
+    // T3: pink injection — interpolate from custom teal-dk to custom pink-dk, fully opaque
     const inject = C.site.t3PinkInject ?? 0
     const ti = inject / 100
     document.documentElement.style.setProperty('--t3-pink-inject',
-      `rgb(${Math.round(74+(rDk-74)*ti)},${Math.round(116+(gDk-116)*ti)},${Math.round(117+(bDk-117)*ti)})`)
-  }, [C.site.theme, C.site.customPink, C.site.t2PinkIntensity, C.site.t3PinkInject, C.site.t3Elements])
+      `rgb(${Math.round(grDk+(rDk-grDk)*ti)},${Math.round(ggDk+(gDk-ggDk)*ti)},${Math.round(gbDk+(bDk-gbDk)*ti)})`)
+  }, [C.site.theme, C.site.customPink, C.site.customGreen, C.site.t2PinkIntensity, C.site.t3PinkInject, C.site.t3Elements])
 
   return <Ctx.Provider value={{ lang, C, setLang, refreshContent }}>{children}</Ctx.Provider>
 }

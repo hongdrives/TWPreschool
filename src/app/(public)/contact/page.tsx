@@ -53,7 +53,15 @@ export default function ContactPage() {
 
               <div className="contact-item">
                 <span className="contact-info-lbl">WhatsApp</span>
-                <span className="contact-info-val">{ct.whatsapp}</span>
+                <a
+                  className="contact-info-val"
+                  href={`https://wa.me/${ct.whatsapp.replace(/\D/g, '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: 'inherit', textDecoration: 'underline', textUnderlineOffset: 3, cursor: 'pointer' }}
+                >
+                  Message us on WhatsApp →
+                </a>
               </div>
 
               <div className="contact-item">
@@ -68,65 +76,33 @@ export default function ContactPage() {
 
             {/* Right contact form */}
             <div className="contact-form-wrap">
-              <h2>{ct.formTitle}</h2>
+              <h2 style={{ marginBottom: '1.25rem' }}>{ct.formTitle}</h2>
 
               {submitted ? (
-                <div className="form-thanks">
-                  <p>Thank you for your message! We will be in touch soon.</p>
+                <div style={{ padding: '20px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, color: '#166534', fontSize: 14 }}>
+                  Thank you for your message! We will be in touch soon.
                 </div>
               ) : (
-                <form className="contact-form" onSubmit={handleSubmit} noValidate>
-                  <div className="fg">
+                <form onSubmit={handleSubmit} noValidate>
+                  <div className="form-group">
                     <label htmlFor="contact-name">Name</label>
-                    <input
-                      id="contact-name"
-                      type="text"
-                      name="name"
-                      value={form.name}
-                      onChange={handleChange}
-                      required
-                      autoComplete="name"
-                    />
+                    <input id="contact-name" type="text" name="name" value={form.name} onChange={handleChange} required autoComplete="name" />
                   </div>
-
-                  <div className="fg">
+                  <div className="form-group">
                     <label htmlFor="contact-email">Email</label>
-                    <input
-                      id="contact-email"
-                      type="email"
-                      name="email"
-                      value={form.email}
-                      onChange={handleChange}
-                      required
-                      autoComplete="email"
-                    />
+                    <input id="contact-email" type="email" name="email" value={form.email} onChange={handleChange} required autoComplete="email" />
                   </div>
-
-                  <div className="fg">
+                  <div className="form-group">
                     <label htmlFor="contact-subject">Subject</label>
-                    <input
-                      id="contact-subject"
-                      type="text"
-                      name="subject"
-                      value={form.subject}
-                      onChange={handleChange}
-                      required
-                    />
+                    <input id="contact-subject" type="text" name="subject" value={form.subject} onChange={handleChange} required />
                   </div>
-
-                  <div className="fg">
+                  <div className="form-group">
                     <label htmlFor="contact-message">Message</label>
-                    <textarea
-                      id="contact-message"
-                      name="message"
-                      rows={6}
-                      value={form.message}
-                      onChange={handleChange}
-                      required
-                    />
+                    <textarea id="contact-message" name="message" rows={6} value={form.message} onChange={handleChange} required />
                   </div>
-
-                  <button type="submit" className="btn btn-full">Send Message</button>
+                  <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', marginTop: '4px' }}>
+                    Send Message
+                  </button>
                 </form>
               )}
             </div>

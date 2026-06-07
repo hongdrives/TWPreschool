@@ -8,7 +8,7 @@ export const DEFAULT_EN: SiteContent = {
   },
   home: {
     heroImg:"https://scontent.fkul22-3.fna.fbcdn.net/v/t39.30808-6/486876075_1162734638974918_5635250187506127984_n.jpg?stp=dst-jpg_tt6&cstp=mx2048x1366&ctp=s2048x1366&_nc_cat=109&ccb=1-7&_nc_sid=127cfc&_nc_ohc=YD_tv2UI3QIQ7kNvwF0mAD_&_nc_oc=AdoCUom_oLTUCgTMXNVhnILHqUxiwCnq6REvxpuQqkjT2EI9OvTnRLHrqFqOa32qB57aCvfRC9qIi6sdx1ecR42J&_nc_zt=23&_nc_ht=scontent.fkul22-3.fna&_nc_gid=PzB8JWnD37z0fulp1SPh9w&_nc_ss=7b289&oh=00_Af_Shi2kXPQ7Yr48AFz5NLZsdNIrDDgWfsi83-RqVO9n8w&oe=6A29C466",
-    heroImgOpacity:0.95, heroImgMobile:true, heroImgMobileOpacity:0.28,
+    heroImgOpacity:0.95, heroImgMobile:true, heroImgMobileOpacity:0.28, heroImgFade:72,
     badge:"Trusted by international families from 12+ countries",
     headline:"Global Childhood.\nLocal Experience.",
     sub:"Short-term preschool experiences in Taiwan, where families experience one of the world's safest and most child-friendly destinations while children connect with local life, nature, language, and new friendships.",
@@ -137,7 +137,7 @@ export const DEFAULT_ZH: SiteContent = {
     cta:{label:"立即申請",page:"programs"}
   },
   home:{
-    heroImg:DEFAULT_EN.home.heroImg, heroImgOpacity:0.95, heroImgMobile:true, heroImgMobileOpacity:0.28,
+    heroImg:DEFAULT_EN.home.heroImg, heroImgOpacity:0.95, heroImgMobile:true, heroImgMobileOpacity:0.28, heroImgFade:72,
     badge:"已獲全球12個以上國家的國際家庭信賴",
     headline:"全球視野的童年。\n在地真實的體驗。",
     sub:"台灣短期幼兒交流體驗——讓您的家庭在全球最安全、最友善兒童的目的地，讓孩子接觸在地生活、大自然、語言與新朋友。",

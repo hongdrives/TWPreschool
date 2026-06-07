@@ -33,7 +33,7 @@ export interface SiteContent {
   }
   nav: { links: NavLink[]; cta: CtaLink }
   home: {
-    heroImg: string; heroImgOpacity: number; heroImgMobile: boolean; heroImgMobileOpacity: number
+    heroImg: string; heroImgOpacity: number; heroImgMobile: boolean; heroImgMobileOpacity: number; heroImgFade: number
     badge: string; headline: string; sub: string; cta1: string; cta2: string
     trust: string[]; stats: StatItem[]
     featuredTitle: string; featuredSub: string

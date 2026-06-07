@@ -16,19 +16,25 @@ export default function HomePage() {
     <>
       {/* ── HERO ── */}
       <div className="hero">
-        {h.heroImg && (
-          <>
-            <style>{`@media(max-width:768px){.hero-img-wrap img{opacity:${h.heroImgMobileOpacity ?? 0.28}!important}}`}</style>
-            <div className={`hero-img-wrap${h.heroImgMobile === false ? ' mobile-off' : ''}`}>
-              <img
-                src={h.heroImg}
-                alt=""
-                style={{ opacity: h.heroImgOpacity ?? 0.95 }}
-                onError={(e) => { (e.currentTarget.parentElement as HTMLElement).style.display = 'none' }}
-              />
-            </div>
-          </>
-        )}
+        {h.heroImg && (() => {
+          const fade = h.heroImgFade ?? 72
+          const mask = fade > 0
+            ? `linear-gradient(to right,transparent 0%,rgba(0,0,0,.35) ${(fade*0.25).toFixed(1)}%,rgba(0,0,0,.78) ${(fade*0.61).toFixed(1)}%,black ${fade}%)`
+            : 'none'
+          return (
+            <>
+              <style>{`@media(max-width:768px){.hero-img-wrap img{opacity:${h.heroImgMobileOpacity ?? 0.28}!important}}`}</style>
+              <div className={`hero-img-wrap${h.heroImgMobile === false ? ' mobile-off' : ''}`}>
+                <img
+                  src={h.heroImg}
+                  alt=""
+                  style={{ opacity: h.heroImgOpacity ?? 0.95, WebkitMaskImage: mask, maskImage: mask }}
+                  onError={(e) => { (e.currentTarget.parentElement as HTMLElement).style.display = 'none' }}
+                />
+              </div>
+            </>
+          )
+        })()}
         <div className="wrap hero-inner">
           <div className="hero-badge">✦ {h.badge}</div>
           <h1 style={{ whiteSpace: 'pre-line' }}>{h.headline}</h1>

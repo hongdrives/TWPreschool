@@ -260,6 +260,15 @@ function HomeEditor({ data, onChange }: { data: SiteContent['home']; onChange: (
             <span style={{ minWidth: 36, fontSize: '.875rem', fontWeight: 600 }}>{Math.round((data.heroImgOpacity ?? 0.95) * 100)}%</span>
           </div>
         )}
+        {fRow('Left Fade %',
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <input type="range" min="0" max="100" step="1"
+              value={data.heroImgFade ?? 72}
+              onChange={e => u('heroImgFade', parseInt(e.target.value))}
+              style={{ flex: 1 }} />
+            <span style={{ minWidth: 36, fontSize: '.875rem', fontWeight: 600 }}>{data.heroImgFade ?? 72}%</span>
+          </div>
+        )}
         {fRow('Show on Mobile',
           <div className="f-radio-group">
             {([true, false] as const).map(v => (

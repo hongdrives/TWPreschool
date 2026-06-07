@@ -88,6 +88,22 @@ html,body{margin:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,'Seg
 /* Skeleton */
 .a-skeleton{height:300px;background:linear-gradient(90deg,#f0f4f8 25%,#e5e7eb 50%,#f0f4f8 75%);background-size:400% 100%;animation:shimmer 1.4s ease infinite;border-radius:10px}
 @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+/* Reset modal */
+.a-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem}
+.a-modal{background:#fff;border-radius:12px;padding:2rem;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.a-modal h3{margin:0 0 .75rem;font-size:1.05rem;font-weight:700;color:#111}
+.a-modal p{margin:0 0 1.25rem;font-size:.875rem;color:#4b5563;line-height:1.6}
+.a-modal-input{width:100%;padding:.55rem .75rem;border:1.5px solid #e5e7eb;border-radius:6px;font-size:.875rem;margin-bottom:1.25rem;outline:none;box-sizing:border-box}
+.a-modal-input:focus{border-color:#0d9488}
+.a-modal-actions{display:flex;flex-direction:column;gap:.6rem}
+.a-modal-btn-en{padding:.6rem 1rem;background:#0d9488;color:#fff;border:none;border-radius:8px;font-size:.8125rem;font-weight:600;cursor:pointer;transition:background .15s}
+.a-modal-btn-en:hover:not(:disabled){background:#0f766e}
+.a-modal-btn-zh{padding:.6rem 1rem;background:#1e40af;color:#fff;border:none;border-radius:8px;font-size:.8125rem;font-weight:600;cursor:pointer;transition:background .15s}
+.a-modal-btn-zh:hover:not(:disabled){background:#1d3a8a}
+.a-modal-btn-cancel{padding:.6rem 1rem;background:#f3f4f6;color:#374151;border:none;border-radius:8px;font-size:.8125rem;font-weight:500;cursor:pointer}
+.a-modal-btn-en:disabled,.a-modal-btn-zh:disabled{opacity:.4;cursor:not-allowed}
+.a-reset-btn{padding:.5rem 1rem;background:#fff;color:#92400e;border:1.5px solid #fcd34d;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.a-reset-btn:hover{background:#fffbeb}
 /* Responsive */
 @media(max-width:640px){
   .a-shell{flex-direction:column}
@@ -690,6 +706,9 @@ export default function AdminSectionPage({ params }: { params: Promise<{ section
   const [saving, setSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'ok' | 'err'>('idle')
   const [adminSecret, setAdminSecret] = useState('')
+  const [showResetModal, setShowResetModal] = useState(false)
+  const [resetConfirm, setResetConfirm] = useState('')
+  const [resetStatus, setResetStatus] = useState<'idle' | 'ok' | 'err'>('idle')
 
   // Load content on mount
   const loadContent = useCallback(async () => {
@@ -750,6 +769,37 @@ export default function AdminSectionPage({ params }: { params: Promise<{ section
     await fetch('/api/admin/login', { method: 'DELETE' })
     document.cookie = 'tpe_admin_key=;path=/;max-age=0'
     router.push('/admin/login')
+  }
+
+  function applyPercentDefaults(d: SiteContent): SiteContent {
+    return {
+      ...d,
+      site: { ...d.site, heroBgOpacity: 0.10 },
+      home: { ...d.home, heroImgOpacity: 0.95, heroImgMobileOpacity: 0.28, heroImgFade: 72 },
+    }
+  }
+
+  async function handleResetPercent(targetLang: Lang) {
+    const current = targetLang === 'en' ? enData : zhData
+    if (!current) return
+    const reset = applyPercentDefaults(current)
+    if (targetLang === 'en') setEnData(reset)
+    else setZhData(reset)
+    const secret = adminSecret || getCookie('tpe_admin_key')
+    setResetStatus('idle')
+    try {
+      const res = await fetch('/api/content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${secret}` },
+        body: JSON.stringify({ lang: targetLang, data: reset }),
+      })
+      setResetStatus(res.ok ? 'ok' : 'err')
+    } catch {
+      setResetStatus('err')
+    }
+    setShowResetModal(false)
+    setResetConfirm('')
+    setTimeout(() => setResetStatus('idle'), 3000)
   }
 
   // Current data proxy
@@ -813,8 +863,13 @@ export default function AdminSectionPage({ params }: { params: Promise<{ section
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
+              {resetStatus === 'ok' && <span className="a-save-status ok">% Reset!</span>}
+              {resetStatus === 'err' && <span className="a-save-status err">Reset failed</span>}
               {saveStatus === 'ok' && <span className="a-save-status ok">Saved!</span>}
               {saveStatus === 'err' && <span className="a-save-status err">Save failed</span>}
+              <button className="a-reset-btn" onClick={() => { setShowResetModal(true); setResetConfirm('') }}>
+                Set % to default
+              </button>
               <button className="a-save-btn" onClick={handleSave} disabled={saving || loading}>
                 {saving ? 'Saving…' : saveLabel}
               </button>
@@ -866,6 +921,46 @@ export default function AdminSectionPage({ params }: { params: Promise<{ section
           </div>
         </main>
       </div>
+
+      {showResetModal && (
+        <div className="a-modal-overlay" onClick={() => setShowResetModal(false)}>
+          <div className="a-modal" onClick={e => e.stopPropagation()}>
+            <h3>Reset all % settings to default</h3>
+            <p>
+              This will reset <strong>all opacity and fade % sliders</strong> back to their recommended defaults.
+              Your text, images, and all other content will <strong>not</strong> be affected.
+              <br /><br />
+              Type <strong>confirm</strong> below then choose which site to reset.
+            </p>
+            <input
+              className="a-modal-input"
+              placeholder="Type confirm to proceed"
+              value={resetConfirm}
+              onChange={e => setResetConfirm(e.target.value)}
+              autoFocus
+            />
+            <div className="a-modal-actions">
+              <button
+                className="a-modal-btn-en"
+                disabled={resetConfirm !== 'confirm'}
+                onClick={() => handleResetPercent('en')}
+              >
+                Agreed to reset all % settings in EN Page
+              </button>
+              <button
+                className="a-modal-btn-zh"
+                disabled={resetConfirm !== 'confirm'}
+                onClick={() => handleResetPercent('zh')}
+              >
+                Agreed to reset all % settings in CN Page
+              </button>
+              <button className="a-modal-btn-cancel" onClick={() => setShowResetModal(false)}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

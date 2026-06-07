@@ -1138,18 +1138,33 @@ function BlogEditor({ data, onChange, adminSecret, otherLangData, onOtherLangCha
 // ---------------------------------------------------------------------------
 // Backup & Restore
 // ---------------------------------------------------------------------------
+const SITE_CONTENT_REQUIRED_KEYS: (keyof SiteContent)[] = [
+  'site', 'home', 'programs', 'whyTaiwan', 'howItWorks', 'about', 'faq', 'contact', 'partner', 'blog',
+]
+
+function isValidSiteContent(data: unknown): data is SiteContent {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return false
+  const d = data as Record<string, unknown>
+  return SITE_CONTENT_REQUIRED_KEYS.every(k => k in d)
+}
+
+interface BackupMeta { exported?: string; entries: { lang: string; data: SiteContent }[] }
+
 function BackupEditor({ enData, zhData, adminSecret }: {
   enData: SiteContent | null
   zhData: SiteContent | null
   adminSecret: string
 }) {
-  const [restoreStatus, setRestoreStatus] = useState<'idle' | 'ok' | 'err'>('idle')
+  const [restoreStatus, setRestoreStatus] = useState<'idle' | 'ok' | 'err' | 'partial'>('idle')
   const [restoring, setRestoring] = useState(false)
-  const [confirmData, setConfirmData] = useState<{ lang: string; data: SiteContent }[] | null>(null)
+  const [restoreMsg, setRestoreMsg] = useState('')
+  const [confirmMeta, setConfirmMeta] = useState<BackupMeta | null>(null)
+  const dataReady = !!enData && !!zhData
 
   function handleBackup() {
+    if (!enData || !zhData) return
     const backup = {
-      version: 1,
+      version: 2,
       site: 'Taiwan Preschool Exchange',
       exported: new Date().toISOString(),
       content: [
@@ -1169,47 +1184,99 @@ function BackupEditor({ enData, zhData, adminSecret }: {
   async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
+    setRestoreStatus('idle')
+    setRestoreMsg('')
     try {
-      const json = JSON.parse(await file.text()) as { version?: number; content?: { lang: string; data: SiteContent }[] }
-      if (!Array.isArray(json.content)) throw new Error('Invalid')
-      setConfirmData(json.content)
-    } catch {
+      const json = JSON.parse(await file.text()) as Record<string, unknown>
+
+      if (!Array.isArray(json.content) || json.content.length === 0) {
+        throw new Error('File does not contain a valid content array.')
+      }
+
+      const validEntries: { lang: string; data: SiteContent }[] = []
+      const invalidLangs: string[] = []
+
+      for (const entry of json.content as unknown[]) {
+        if (!entry || typeof entry !== 'object') continue
+        const e = entry as Record<string, unknown>
+        const lang = typeof e.lang === 'string' ? e.lang : '?'
+        if (!isValidSiteContent(e.data)) {
+          invalidLangs.push(lang)
+        } else {
+          validEntries.push({ lang, data: e.data })
+        }
+      }
+
+      if (validEntries.length === 0) {
+        throw new Error(`No valid language entries found.${invalidLangs.length ? ` (${invalidLangs.join(', ')} failed structure check)` : ''}`)
+      }
+
+      if (invalidLangs.length > 0) {
+        setRestoreMsg(`Warning: ${invalidLangs.join(', ')} entries are missing required fields and will be skipped.`)
+      }
+
+      setConfirmMeta({ exported: json.exported as string | undefined, entries: validEntries })
+    } catch (err) {
       setRestoreStatus('err')
-      setTimeout(() => setRestoreStatus('idle'), 4000)
+      setRestoreMsg(err instanceof Error ? err.message : 'Invalid file — could not parse.')
     }
     e.target.value = ''
   }
 
   async function executeRestore() {
-    if (!confirmData) return
+    if (!confirmMeta) return
     setRestoring(true)
-    try {
-      for (const entry of confirmData) {
+    const results: { lang: string; ok: boolean }[] = []
+
+    for (const entry of confirmMeta.entries) {
+      try {
         const res = await fetch('/api/content', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminSecret}` },
           body: JSON.stringify({ lang: entry.lang, data: entry.data }),
         })
-        if (!res.ok) throw new Error('Failed')
+        results.push({ lang: entry.lang, ok: res.ok })
+      } catch {
+        results.push({ lang: entry.lang, ok: false })
       }
-      setRestoreStatus('ok')
-      setConfirmData(null)
-      setTimeout(() => window.location.reload(), 1500)
-    } catch {
-      setRestoreStatus('err')
     }
+
+    const failed = results.filter(r => !r.ok).map(r => r.lang.toUpperCase())
+    const succeeded = results.filter(r => r.ok).map(r => r.lang.toUpperCase())
+
+    setConfirmMeta(null)
     setRestoring(false)
+
+    if (failed.length === 0) {
+      setRestoreStatus('ok')
+      setRestoreMsg(`✓ Restored ${succeeded.join(' + ')} — reloading…`)
+      setTimeout(() => window.location.reload(), 1800)
+    } else if (succeeded.length > 0) {
+      setRestoreStatus('partial')
+      setRestoreMsg(`Partially restored: ${succeeded.join(', ')} succeeded — ${failed.join(', ')} failed.`)
+    } else {
+      setRestoreStatus('err')
+      setRestoreMsg('Restore failed — server rejected the request. Check the admin secret and try again.')
+    }
   }
+
+  const statusColour = { idle: '', ok: '#065f46', err: '#991b1b', partial: '#92400e' }
+  const statusBg = { idle: '', ok: '#d1fae5', err: '#fee2e2', partial: '#fef3c7' }
 
   return (
     <>
       <div className="a-card">
         <div className="a-card-title">Backup Data</div>
-        <p style={{ fontSize: '.875rem', color: '#4b5563', lineHeight: 1.6, marginBottom: '1.25rem' }}>
-          Downloads all site content (English + Chinese) as a JSON file.
-          Keep it safe — you can use it to restore everything later.
+        <p style={{ fontSize: '.875rem', color: '#4b5563', lineHeight: 1.6, marginBottom: '1rem' }}>
+          Downloads all site content (EN + CN) as a single JSON file. Keep it safe — use it to restore everything if needed.
         </p>
-        <button className="a-save-btn" onClick={handleBackup}>⬇ Download Backup (.json)</button>
+        <p style={{ fontSize: '.8rem', color: '#9ca3af', marginBottom: '1.25rem', lineHeight: 1.5 }}>
+          Note: uploaded images in Supabase Storage are not included — only the URLs. Back up images separately if needed.
+        </p>
+        {!dataReady
+          ? <p style={{ fontSize: '.875rem', color: '#9ca3af' }}>Loading data…</p>
+          : <button className="a-save-btn" onClick={handleBackup}>⬇ Download Backup (.json)</button>
+        }
       </div>
 
       <div className="a-card">
@@ -1218,23 +1285,36 @@ function BackupEditor({ enData, zhData, adminSecret }: {
           Upload a backup file to restore all content.{' '}
           <strong style={{ color: '#b91c1c' }}>This overwrites all current content — use with caution.</strong>
         </p>
-        {restoreStatus === 'ok' && <p style={{ color: '#065f46', fontSize: '.875rem', margin: '.75rem 0', fontWeight: 600 }}>✓ Restored successfully — reloading…</p>}
-        {restoreStatus === 'err' && <p style={{ color: '#991b1b', fontSize: '.875rem', margin: '.75rem 0' }}>✗ Failed — invalid file or server error.</p>}
-        <label className="a-reset-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: '.4rem', cursor: 'pointer', marginTop: '.75rem' }}>
+        {restoreStatus !== 'idle' && restoreMsg && (
+          <p style={{ color: statusColour[restoreStatus], background: statusBg[restoreStatus], fontSize: '.875rem', margin: '.75rem 0 0', padding: '.625rem .875rem', borderRadius: 6, fontWeight: 500, lineHeight: 1.5 }}>
+            {restoreMsg}
+          </p>
+        )}
+        {restoreStatus === 'idle' && restoreMsg && (
+          <p style={{ color: '#92400e', background: '#fef3c7', fontSize: '.8rem', margin: '.75rem 0 0', padding: '.5rem .75rem', borderRadius: 6, lineHeight: 1.5 }}>
+            {restoreMsg}
+          </p>
+        )}
+        <label className="a-reset-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: '.4rem', cursor: 'pointer', marginTop: '1rem' }}>
           ⬆ Upload Backup File
           <input type="file" accept=".json" onChange={handleFileSelect} style={{ display: 'none' }} />
         </label>
       </div>
 
-      {confirmData && (
-        <div className="a-modal-overlay" onClick={() => setConfirmData(null)}>
+      {confirmMeta && (
+        <div className="a-modal-overlay" onClick={() => !restoring && setConfirmMeta(null)}>
           <div className="a-modal" onClick={e => e.stopPropagation()}>
             <h3>Confirm Restore</h3>
+            {confirmMeta.exported && (
+              <p style={{ fontSize: '.8rem', color: '#6b7280', marginBottom: '.75rem' }}>
+                Backup exported: {new Date(confirmMeta.exported).toLocaleString()}
+              </p>
+            )}
             <p>
               This will <strong>overwrite all current content</strong> for{' '}
-              {confirmData.map(e => e.lang.toUpperCase()).join(' + ')} with the backup data.
+              <strong>{confirmMeta.entries.map(e => e.lang.toUpperCase()).join(' + ')}</strong> with the backup data.
               <br /><br />
-              This cannot be undone. Are you sure?
+              <span style={{ color: '#b91c1c' }}>This cannot be undone.</span> Make a fresh backup first if you want to keep the current state.
             </p>
             <div className="a-modal-actions">
               <button
@@ -1245,7 +1325,7 @@ function BackupEditor({ enData, zhData, adminSecret }: {
               >
                 {restoring ? 'Restoring…' : 'Yes, Restore Now'}
               </button>
-              <button className="a-modal-btn-cancel" onClick={() => setConfirmData(null)}>Cancel</button>
+              <button className="a-modal-btn-cancel" disabled={restoring} onClick={() => setConfirmMeta(null)}>Cancel</button>
             </div>
           </div>
         </div>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, use } from 'react'
 import { useRouter } from 'next/navigation'
-import type { SiteContent, School, WhyCard, HiwStep, VettingItem, TeamMember, FaqItem, BlogPost, BenefitItem, StatItem, StepItem, WhyItem } from '@/types/content'
+import type { SiteContent, School, WhyCard, HiwStep, VettingItem, TeamMember, FaqItem, BlogPost, BenefitItem, StatItem, StepItem, WhyItem, ScheduleItem, IncludeItem } from '@/types/content'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -115,6 +115,20 @@ html,body{margin:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,'Seg
 .a-modal-btn-en:disabled,.a-modal-btn-zh:disabled{opacity:.4;cursor:not-allowed}
 .a-reset-btn{padding:.5rem 1rem;background:#fff;color:#92400e;border:1.5px solid #fcd34d;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
 .a-reset-btn:hover{background:#fffbeb}
+/* Programs split layout */
+.a-prog-cols{display:grid;grid-template-columns:200px 1fr;gap:1.25rem;align-items:start}
+.a-prog-list{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.06);overflow:hidden;position:sticky;top:5rem}
+.a-prog-tab{display:block;width:100%;text-align:left;padding:.65rem 1rem;font-size:.8125rem;color:#374151;background:none;border:none;border-bottom:1px solid #f3f4f6;cursor:pointer;transition:background .12s;line-height:1.3}
+.a-prog-tab:hover{background:#f9fafb}
+.a-prog-tab.active{background:#f0fdf4;color:#0d9488;font-weight:700;border-left:3px solid #0d9488}
+.a-prog-tab-name{display:block;font-weight:600;font-size:.8rem}
+.a-prog-tab-loc{display:block;font-size:.7rem;color:#9ca3af;margin-top:2px}
+.a-prog-add{display:block;width:100%;text-align:center;padding:.65rem 1rem;font-size:.8rem;font-weight:600;color:#0d9488;background:#f0fdf4;border:none;border-top:1.5px solid #bbf7d0;cursor:pointer;transition:background .12s}
+.a-prog-add:hover{background:#dcfce7}
+.a-prog-empty{padding:1.5rem 1rem;text-align:center;color:#9ca3af;font-size:.8rem;line-height:1.6}
+.a-sched-row{display:grid;grid-template-columns:110px 1fr auto;gap:.5rem;margin-bottom:.5rem;align-items:center}
+.a-inc-row{display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem}
+.a-inc-check{width:16px;height:16px;cursor:pointer;accent-color:#0d9488;flex-shrink:0}
 /* Responsive */
 @media(max-width:640px){
   .a-shell{flex-direction:column}
@@ -531,52 +545,151 @@ function HomeEditor({ data, onChange }: { data: SiteContent['home']; onChange: (
 
 function ProgramsEditor({ data, onChange }: { data: SiteContent['programs']; onChange: (v: SiteContent['programs']) => void }) {
   const u = <K extends keyof SiteContent['programs']>(k: K, v: SiteContent['programs'][K]) => onChange({ ...data, [k]: v })
+  const [selectedIdx, setSelectedIdx] = useState(0)
 
-  function updateSchool(i: number, k: keyof School, v: School[typeof k]) {
+  const idx = Math.min(selectedIdx, Math.max(0, data.schools.length - 1))
+  const school = data.schools.length > 0 ? data.schools[idx] : null
+
+  function updateSchool(si: number, patch: Partial<School>) {
     const arr = [...data.schools]
-    arr[i] = { ...arr[i], [k]: v } as School
+    arr[si] = { ...arr[si], ...patch }
     u('schools', arr)
   }
 
   function addSchool() {
     const newSchool: School = {
-      id: `school-${Date.now()}`, name: '', city: '', area: '', ageRange: '',
+      id: `school-${Date.now()}`, name: 'New Program', city: '', area: '', ageRange: '',
       languages: '', durations: '', priceFrom: '', features: [], photo: '',
       badge: '', desc: '', schedule: [], includes: [],
     }
-    u('schools', [...data.schools, newSchool])
+    const newArr = [...data.schools, newSchool]
+    u('schools', newArr)
+    setSelectedIdx(newArr.length - 1)
   }
 
-  function removeSchool(i: number) {
-    u('schools', data.schools.filter((_, idx) => idx !== i))
+  function removeSchool(si: number) {
+    u('schools', data.schools.filter((_, i) => i !== si))
+    setSelectedIdx(Math.max(0, si - 1))
+  }
+
+  function updateSchedule(si: number, k: keyof ScheduleItem, v: string) {
+    if (!school) return
+    const sched = [...(school.schedule ?? [])]
+    sched[si] = { ...sched[si], [k]: v }
+    updateSchool(idx, { schedule: sched })
+  }
+
+  function addSchedule() {
+    if (!school) return
+    updateSchool(idx, { schedule: [...(school.schedule ?? []), { t: '', a: '' }] })
+  }
+
+  function removeSchedule(si: number) {
+    if (!school) return
+    updateSchool(idx, { schedule: (school.schedule ?? []).filter((_, i) => i !== si) })
+  }
+
+  function updateInclude(ii: number, patch: Partial<IncludeItem>) {
+    if (!school) return
+    const incs = [...(school.includes ?? [])]
+    incs[ii] = { ...incs[ii], ...patch }
+    updateSchool(idx, { includes: incs })
+  }
+
+  function addInclude() {
+    if (!school) return
+    updateSchool(idx, { includes: [...(school.includes ?? []), { item: '', inc: true }] })
+  }
+
+  function removeInclude(ii: number) {
+    if (!school) return
+    updateSchool(idx, { includes: (school.includes ?? []).filter((_, i) => i !== ii) })
   }
 
   return (
     <>
       <div className="a-card">
         <div className="a-card-title">Programs Section</div>
-        {fRow('Title', inp(data.title, v => u('title', v)))}
-        {fRow('Subtitle', inp(data.sub, v => u('sub', v), { textarea: true }))}
+        {fRow('Page Title', inp(data.title, v => u('title', v)))}
+        {fRow('Page Subtitle', inp(data.sub, v => u('sub', v), { textarea: true }))}
       </div>
-      <div className="a-card">
-        <div className="a-card-title">Schools</div>
-        {data.schools.map((s, i) => (
-          <CollapsibleItem key={s.id} title={`${s.name || '(unnamed)'} — ${s.city}`} onRemove={() => removeSchool(i)}>
-            {fRow('ID (slug)', inp(s.id, v => updateSchool(i, 'id', v)))}
-            {fRow('Name', inp(s.name, v => updateSchool(i, 'name', v)))}
-            {fRow('City', inp(s.city, v => updateSchool(i, 'city', v)))}
-            {fRow('Area', inp(s.area, v => updateSchool(i, 'area', v)))}
-            {fRow('Age Range', inp(s.ageRange, v => updateSchool(i, 'ageRange', v)))}
-            {fRow('Languages', inp(s.languages, v => updateSchool(i, 'languages', v)))}
-            {fRow('Durations', inp(s.durations, v => updateSchool(i, 'durations', v)))}
-            {fRow('Price From (USD)', inp(s.priceFrom, v => updateSchool(i, 'priceFrom', v)))}
-            {fRow('Badge', inp(s.badge, v => updateSchool(i, 'badge', v)))}
-            {fRow('Photo URL', inp(s.photo, v => updateSchool(i, 'photo', v)))}
-            {fRow('Description', inp(s.desc, v => updateSchool(i, 'desc', v), { textarea: true, rows: 3 }))}
-            {fRow('Features', inp(s.features.join(', '), v => updateSchool(i, 'features', v.split(',').map(x => x.trim()).filter(Boolean)), { placeholder: 'Comma-separated' }))}
-          </CollapsibleItem>
-        ))}
-        <button className="a-add-btn" onClick={addSchool}>+ Add School</button>
+
+      <div className="a-prog-cols">
+        {/* Left: program tab list */}
+        <div className="a-prog-list">
+          {data.schools.length === 0 ? (
+            <div className="a-prog-empty">No programs yet.<br />Click below to add one.</div>
+          ) : (
+            data.schools.map((s, i) => (
+              <button
+                key={s.id}
+                className={`a-prog-tab${i === idx ? ' active' : ''}`}
+                onClick={() => setSelectedIdx(i)}
+              >
+                <span className="a-prog-tab-name">{s.name || '(unnamed)'}</span>
+                <span className="a-prog-tab-loc">{s.city || '—'}</span>
+              </button>
+            ))
+          )}
+          <button className="a-prog-add" onClick={addSchool}>+ Add Program</button>
+        </div>
+
+        {/* Right: full editor for selected program */}
+        {school ? (
+          <div>
+            {/* Basic Info */}
+            <div className="a-card">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <div className="a-card-title" style={{ margin: 0 }}>Basic Info</div>
+                <button className="a-remove-btn" onClick={() => removeSchool(idx)}>Remove Program</button>
+              </div>
+              {fRow('Slug (URL)', inp(school.id, v => updateSchool(idx, { id: v }), { placeholder: 'e.g. taipei-bilingual' }))}
+              {fRow('Name', inp(school.name, v => updateSchool(idx, { name: v })))}
+              {fRow('Badge', inp(school.badge, v => updateSchool(idx, { badge: v }), { placeholder: 'e.g. Most Popular' }))}
+              {fRow('City', inp(school.city, v => updateSchool(idx, { city: v })))}
+              {fRow('Area / District', inp(school.area, v => updateSchool(idx, { area: v })))}
+              {fRow('Age Range', inp(school.ageRange, v => updateSchool(idx, { ageRange: v }), { placeholder: 'e.g. 2–6 years' }))}
+              {fRow('Languages', inp(school.languages, v => updateSchool(idx, { languages: v }), { placeholder: 'e.g. English · Mandarin' }))}
+              {fRow('Durations', inp(school.durations, v => updateSchool(idx, { durations: v }), { placeholder: 'e.g. 1–4 weeks' }))}
+              {fRow('Price From (USD)', inp(school.priceFrom, v => updateSchool(idx, { priceFrom: v }), { placeholder: 'e.g. 2200' }))}
+              {fRow('Photo URL', inp(school.photo, v => updateSchool(idx, { photo: v })))}
+              {fRow('Description', inp(school.desc, v => updateSchool(idx, { desc: v }), { textarea: true, rows: 4 }))}
+              {fRow('Feature Tags', inp(school.features.join(', '), v => updateSchool(idx, { features: v.split(',').map((x: string) => x.trim()).filter(Boolean) }), { placeholder: 'Comma-separated, e.g. English Support, City Centre' }))}
+            </div>
+
+            {/* Daily Schedule */}
+            <div className="a-card">
+              <div className="a-card-title">Daily Schedule</div>
+              <p className="a-theme-hint" style={{ marginTop: 0, marginBottom: '.875rem' }}>Time &amp; activity pairs shown on the program detail page</p>
+              {(school.schedule ?? []).map((item, si) => (
+                <div key={si} className="a-sched-row">
+                  <input className="f-input sm" value={item.t} onChange={e => updateSchedule(si, 't', e.target.value)} placeholder="8:30am" />
+                  <input className="f-input sm" value={item.a} onChange={e => updateSchedule(si, 'a', e.target.value)} placeholder="Activity description" />
+                  <button className="a-remove-btn" onClick={() => removeSchedule(si)}>✕</button>
+                </div>
+              ))}
+              <button className="a-add-btn" onClick={addSchedule}>+ Add Time Slot</button>
+            </div>
+
+            {/* What's Included */}
+            <div className="a-card">
+              <div className="a-card-title">What&apos;s Included</div>
+              <p className="a-theme-hint" style={{ marginTop: 0, marginBottom: '.875rem' }}>Checked = included ✓ &nbsp; Unchecked = not included ✗</p>
+              {(school.includes ?? []).map((item, ii) => (
+                <div key={ii} className="a-inc-row">
+                  <input type="checkbox" className="a-inc-check" checked={item.inc} onChange={e => updateInclude(ii, { inc: e.target.checked })} />
+                  <input className="f-input sm" style={{ flex: 1 }} value={item.item} onChange={e => updateInclude(ii, { item: e.target.value })} placeholder="e.g. Daily lunch &amp; snacks" />
+                  <button className="a-remove-btn" onClick={() => removeInclude(ii)}>✕</button>
+                </div>
+              ))}
+              <button className="a-add-btn" onClick={addInclude}>+ Add Item</button>
+            </div>
+          </div>
+        ) : (
+          <div className="a-card" style={{ textAlign: 'center', color: '#9ca3af', padding: '3rem 1.5rem', fontSize: '.875rem' }}>
+            Select a program on the left to edit its details
+          </div>
+        )}
       </div>
     </>
   )
@@ -1168,7 +1281,7 @@ export default function AdminSectionPage({ params }: { params: Promise<{ section
           </div>
 
           {/* Content */}
-          <div className="a-content">
+          <div className="a-content" style={activeSection === 'programs' ? { maxWidth: '1100px' } : {}}>
             <h1 className="a-section-title">
               {SECTIONS.find(s => s.key === activeSection)?.label}
             </h1>

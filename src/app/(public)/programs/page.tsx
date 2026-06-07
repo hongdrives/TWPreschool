@@ -130,13 +130,13 @@ export default function ProgramsPage() {
                     <div className="card-foot">
                       <span className="card-price">From US${school.priceFrom}</span>
                       <button
-                        className="btn btn-sm"
+                        className="btn btn-outline btn-sm"
                         onClick={(e) => {
                           e.stopPropagation()
                           router.push(`/programs/${school.id}`)
                         }}
                       >
-                        View Program
+                        View Program →
                       </button>
                     </div>
                   </div>

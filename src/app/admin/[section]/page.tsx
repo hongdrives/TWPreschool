@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, use } from 'react'
+import { useState, useEffect, useCallback, use, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import type { SiteContent, School, WhyCard, HiwStep, VettingItem, TeamMember, FaqItem, BlogPost, BenefitItem, StatItem, StepItem, WhyItem, ScheduleItem, IncludeItem } from '@/types/content'
 
@@ -543,7 +543,75 @@ function HomeEditor({ data, onChange }: { data: SiteContent['home']; onChange: (
   )
 }
 
-function ProgramsEditor({ data, onChange }: { data: SiteContent['programs']; onChange: (v: SiteContent['programs']) => void }) {
+// ---------------------------------------------------------------------------
+// Image uploader (used by ProgramsEditor)
+// ---------------------------------------------------------------------------
+function ImageUploader({ value, onChange, adminSecret }: {
+  value: string
+  onChange: (url: string) => void
+  adminSecret: string
+}) {
+  const [uploading, setUploading] = useState(false)
+  const [uploadErr, setUploadErr] = useState('')
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    setUploadErr('')
+    try {
+      const form = new FormData()
+      form.append('file', file)
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${adminSecret}` },
+        body: form,
+      })
+      const json = await res.json() as { url?: string; error?: string }
+      if (json.url) onChange(json.url)
+      else setUploadErr(json.error ?? 'Upload failed')
+    } catch {
+      setUploadErr('Upload failed')
+    }
+    setUploading(false)
+    if (fileRef.current) fileRef.current.value = ''
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
+      {value && (
+        <img
+          src={value}
+          alt="Preview"
+          style={{ width: '100%', maxWidth: 280, height: 110, objectFit: 'cover', borderRadius: 6, border: '1.5px solid #e5e7eb', display: 'block' }}
+        />
+      )}
+      <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center' }}>
+        <input
+          type="text"
+          className="f-input"
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          placeholder="Paste URL or click Upload →"
+        />
+        <button
+          type="button"
+          className="a-add-btn"
+          onClick={() => fileRef.current?.click()}
+          disabled={uploading}
+          style={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+        >
+          {uploading ? 'Uploading…' : '↑ Upload'}
+        </button>
+      </div>
+      {uploadErr && <span style={{ fontSize: '.75rem', color: '#ef4444' }}>{uploadErr}</span>}
+      <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFile} />
+    </div>
+  )
+}
+
+function ProgramsEditor({ data, onChange, adminSecret }: { data: SiteContent['programs']; onChange: (v: SiteContent['programs']) => void; adminSecret: string }) {
   const u = <K extends keyof SiteContent['programs']>(k: K, v: SiteContent['programs'][K]) => onChange({ ...data, [k]: v })
   const [selectedIdx, setSelectedIdx] = useState(0)
 
@@ -652,7 +720,7 @@ function ProgramsEditor({ data, onChange }: { data: SiteContent['programs']; onC
               {fRow('Languages', inp(school.languages, v => updateSchool(idx, { languages: v }), { placeholder: 'e.g. English · Mandarin' }))}
               {fRow('Durations', inp(school.durations, v => updateSchool(idx, { durations: v }), { placeholder: 'e.g. 1–4 weeks' }))}
               {fRow('Price From (USD)', inp(school.priceFrom, v => updateSchool(idx, { priceFrom: v }), { placeholder: 'e.g. 2200' }))}
-              {fRow('Photo URL', inp(school.photo, v => updateSchool(idx, { photo: v })))}
+              {fRow('Photo', <ImageUploader value={school.photo} onChange={v => updateSchool(idx, { photo: v })} adminSecret={adminSecret} />)}
               {fRow('Description', inp(school.desc, v => updateSchool(idx, { desc: v }), { textarea: true, rows: 4 }))}
               {fRow('Feature Tags', inp(school.features.join(', '), v => updateSchool(idx, { features: v.split(',').map((x: string) => x.trim()).filter(Boolean) }), { placeholder: 'Comma-separated, e.g. English Support, City Centre' }))}
             </div>
@@ -1297,7 +1365,7 @@ export default function AdminSectionPage({ params }: { params: Promise<{ section
                   <HomeEditor data={data.home} onChange={v => updateSection('home', v)} />
                 )}
                 {activeSection === 'programs' && (
-                  <ProgramsEditor data={data.programs} onChange={v => updateSection('programs', v)} />
+                  <ProgramsEditor data={data.programs} onChange={v => updateSection('programs', v)} adminSecret={adminSecret || getCookie('tpe_admin_key')} />
                 )}
                 {activeSection === 'whyTaiwan' && (
                   <WhyTaiwanEditor data={data.whyTaiwan} onChange={v => updateSection('whyTaiwan', v)} />

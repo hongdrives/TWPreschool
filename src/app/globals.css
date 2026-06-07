@@ -299,6 +299,13 @@ footer{background:var(--ink);color:rgba(255,255,255,.7);padding:52px 0 30px}
 [data-t3~="navLogo"] .nav-logo{color:var(--pink-dk)}
 [data-t3~="navLogoIcon"] .nav-logo-icon{background:linear-gradient(135deg,var(--pink),var(--pink-dk))}
 [data-t3~="navActiveLink"] .nav-links button.active{color:var(--pink-dk);background:var(--pink-xl)}
+[data-t3~="navPrograms"] .nav-links button[data-page="programs"]{color:var(--pink-dk)}
+[data-t3~="navWhyTaiwan"] .nav-links button[data-page="why-taiwan"]{color:var(--pink-dk)}
+[data-t3~="navHowItWorks"] .nav-links button[data-page="how-it-works"]{color:var(--pink-dk)}
+[data-t3~="navAbout"] .nav-links button[data-page="about"]{color:var(--pink-dk)}
+[data-t3~="navBlog"] .nav-links button[data-page="blog"]{color:var(--pink-dk)}
+[data-t3~="navFaq"] .nav-links button[data-page="faq"]{color:var(--pink-dk)}
+[data-t3~="navContact"] .nav-links button[data-page="contact"]{color:var(--pink-dk)}
 /* Buttons */
 [data-t3~="btnPrimary"] .btn-primary{background:var(--pink)}
 [data-t3~="btnPrimary"] .btn-primary:hover{background:var(--pink-dk)}

@@ -218,6 +218,13 @@ const T3_ELEMENTS: { key: keyof NonNullable<SiteContent['site']['t3Elements']>; 
   { key: 'navLogo',         label: 'Nav — Logo text colour',            desc: 'The site name text next to the logo icon in the nav' },
   { key: 'navLogoIcon',     label: 'Nav — Logo icon square',            desc: 'The small square icon block that sits left of the site name' },
   { key: 'navActiveLink',   label: 'Nav — Active page link',            desc: 'The currently-active page link highlight in the nav bar' },
+  { key: 'navPrograms',     label: 'Nav — Programs link',               desc: 'The "Programs" text link in the nav bar' },
+  { key: 'navWhyTaiwan',    label: 'Nav — Why Taiwan link',             desc: 'The "Why Taiwan" text link in the nav bar' },
+  { key: 'navHowItWorks',   label: 'Nav — How It Works link',           desc: 'The "How It Works" text link in the nav bar' },
+  { key: 'navAbout',        label: 'Nav — About link',                  desc: 'The "About" text link in the nav bar' },
+  { key: 'navBlog',         label: 'Nav — Blog link',                   desc: 'The "Blog" text link in the nav bar' },
+  { key: 'navFaq',          label: 'Nav — FAQ link',                    desc: 'The "FAQ" text link in the nav bar' },
+  { key: 'navContact',      label: 'Nav — Contact link',                desc: 'The "Contact" text link in the nav bar' },
   // Buttons
   { key: 'btnPrimary',      label: 'Buttons — Primary (filled)',        desc: 'All solid primary buttons site-wide (hero CTAs, page CTAs, etc.)' },
   { key: 'btnOutline',      label: 'Buttons — Outline style',           desc: 'All outline/bordered buttons used as secondary actions' },

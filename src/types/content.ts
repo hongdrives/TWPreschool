@@ -33,6 +33,8 @@ export interface SiteContent {
     t2PinkIntensity?: number
     t3Elements?: {
       navCta?: boolean; navLogo?: boolean; navLogoIcon?: boolean; navActiveLink?: boolean
+      navPrograms?: boolean; navWhyTaiwan?: boolean; navHowItWorks?: boolean; navAbout?: boolean
+      navBlog?: boolean; navFaq?: boolean; navContact?: boolean
       heroBadge?: boolean; heroCta1?: boolean; heroCta2?: boolean; trustItems?: boolean
       btnPrimary?: boolean; btnOutline?: boolean
       sectionLabel?: boolean

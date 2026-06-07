@@ -45,6 +45,7 @@ export default function Nav() {
                 key={l.page}
                 onClick={() => go(l.page)}
                 className={isActive(l.page) ? 'active' : ''}
+                data-page={l.page}
               >
                 {l.label}
               </button>

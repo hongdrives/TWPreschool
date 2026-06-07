@@ -141,15 +141,6 @@ html,body{margin:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,'Seg
 `
 
 // ---------------------------------------------------------------------------
-// Helper: read cookie
-// ---------------------------------------------------------------------------
-function getCookie(name: string): string {
-  if (typeof document === 'undefined') return ''
-  const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'))
-  return match ? decodeURIComponent(match[1]) : ''
-}
-
-// ---------------------------------------------------------------------------
 // fRow helper
 // ---------------------------------------------------------------------------
 function fRow(label: string, input: React.ReactNode) {
@@ -1388,9 +1379,7 @@ export default function AdminSectionPage({ params }: { params: Promise<{ section
     setSaving(true)
     setSaveStatus('idle')
 
-    // Try cookie secret if not fetched via API yet
-    const secret = adminSecret || getCookie('tpe_admin_key')
-
+    const secret = adminSecret
     try {
       const res = await fetch('/api/content', {
         method: 'POST',
@@ -1411,7 +1400,6 @@ export default function AdminSectionPage({ params }: { params: Promise<{ section
 
   async function handleSignOut() {
     await fetch('/api/admin/login', { method: 'DELETE' })
-    document.cookie = 'tpe_admin_key=;path=/;max-age=0'
     router.push('/admin/login')
   }
 
@@ -1429,7 +1417,7 @@ export default function AdminSectionPage({ params }: { params: Promise<{ section
     const reset = applyPercentDefaults(current)
     if (targetLang === 'en') setEnData(reset)
     else setZhData(reset)
-    const secret = adminSecret || getCookie('tpe_admin_key')
+    const secret = adminSecret
     setResetStatus('idle')
     try {
       const res = await fetch('/api/content', {
@@ -1470,7 +1458,7 @@ export default function AdminSectionPage({ params }: { params: Promise<{ section
     // Auto-persist to Supabase so the other language is saved without the user
     // needing to switch language tabs and click Save manually
     const otherLang = lang === 'en' ? 'zh' : 'en'
-    const secret = adminSecret || getCookie('tpe_admin_key')
+    const secret = adminSecret
     if (secret) {
       fetch('/api/content', {
         method: 'POST',
@@ -1556,10 +1544,10 @@ export default function AdminSectionPage({ params }: { params: Promise<{ section
                   <SiteEditor data={data.site} onChange={v => updateSection('site', v)} />
                 )}
                 {activeSection === 'home' && (
-                  <HomeEditor data={data.home} onChange={v => updateSection('home', v)} adminSecret={adminSecret || getCookie('tpe_admin_key')} otherLangData={otherData?.home} onOtherLangChange={v => updateOtherSection('home', v)} />
+                  <HomeEditor data={data.home} onChange={v => updateSection('home', v)} adminSecret={adminSecret} otherLangData={otherData?.home} onOtherLangChange={v => updateOtherSection('home', v)} />
                 )}
                 {activeSection === 'programs' && (
-                  <ProgramsEditor data={data.programs} onChange={v => updateSection('programs', v)} adminSecret={adminSecret || getCookie('tpe_admin_key')} otherLangData={otherData?.programs} onOtherLangChange={v => updateOtherSection('programs', v)} />
+                  <ProgramsEditor data={data.programs} onChange={v => updateSection('programs', v)} adminSecret={adminSecret} otherLangData={otherData?.programs} onOtherLangChange={v => updateOtherSection('programs', v)} />
                 )}
                 {activeSection === 'whyTaiwan' && (
                   <WhyTaiwanEditor data={data.whyTaiwan} onChange={v => updateSection('whyTaiwan', v)} />
@@ -1568,7 +1556,7 @@ export default function AdminSectionPage({ params }: { params: Promise<{ section
                   <HowItWorksEditor data={data.howItWorks} onChange={v => updateSection('howItWorks', v)} />
                 )}
                 {activeSection === 'about' && (
-                  <AboutEditor data={data.about} onChange={v => updateSection('about', v)} adminSecret={adminSecret || getCookie('tpe_admin_key')} otherLangData={otherData?.about} onOtherLangChange={v => updateOtherSection('about', v)} />
+                  <AboutEditor data={data.about} onChange={v => updateSection('about', v)} adminSecret={adminSecret} otherLangData={otherData?.about} onOtherLangChange={v => updateOtherSection('about', v)} />
                 )}
                 {activeSection === 'faq' && (
                   <FaqEditor data={data.faq} onChange={v => updateSection('faq', v)} />
@@ -1580,7 +1568,7 @@ export default function AdminSectionPage({ params }: { params: Promise<{ section
                   <PartnerEditor data={data.partner} onChange={v => updateSection('partner', v)} />
                 )}
                 {activeSection === 'blog' && (
-                  <BlogEditor data={data.blog} onChange={v => updateSection('blog', v)} adminSecret={adminSecret || getCookie('tpe_admin_key')} otherLangData={otherData?.blog} onOtherLangChange={v => updateOtherSection('blog', v)} />
+                  <BlogEditor data={data.blog} onChange={v => updateSection('blog', v)} adminSecret={adminSecret} otherLangData={otherData?.blog} onOtherLangChange={v => updateOtherSection('blog', v)} />
                 )}
               </>
             )}
@@ -1589,7 +1577,7 @@ export default function AdminSectionPage({ params }: { params: Promise<{ section
               <BackupEditor
                 enData={enData}
                 zhData={zhData}
-                adminSecret={adminSecret || getCookie('tpe_admin_key')}
+                adminSecret={adminSecret}
               />
             )}
           </div>

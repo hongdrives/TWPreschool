@@ -48,9 +48,13 @@ export function LangProvider({ children }: { children: ReactNode }) {
     const intensity = C.site.t2PinkIntensity ?? 30
     document.documentElement.style.setProperty('--t2-pink-stop', `rgba(139,61,107,${(intensity / 100).toFixed(2)})`)
 
-    // T3: pink injection into gradients
+    // T3: pink injection — interpolate from teal-dk (74,116,117) to pink (139,61,107) fully opaque
     const inject = C.site.t3PinkInject ?? 0
-    document.documentElement.style.setProperty('--t3-pink-inject', `rgba(139,61,107,${(inject / 100).toFixed(2)})`)
+    const t = inject / 100
+    const r = Math.round(74  + (139 - 74)  * t)
+    const g = Math.round(116 + (61  - 116) * t)
+    const b = Math.round(117 + (107 - 117) * t)
+    document.documentElement.style.setProperty('--t3-pink-inject', `rgb(${r},${g},${b})`)
 
     // T3: space-separated list of active elements as data attribute
     const elems = C.site.t3Elements ?? {}

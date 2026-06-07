@@ -40,6 +40,10 @@ export function LangProvider({ children }: { children: ReactNode }) {
 
   const refreshContent = useCallback(() => loadContent(lang), [lang, loadContent])
 
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', C.site.theme ?? 't1')
+  }, [C.site.theme])
+
   return <Ctx.Provider value={{ lang, C, setLang, refreshContent }}>{children}</Ctx.Provider>
 }
 

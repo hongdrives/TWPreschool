@@ -213,6 +213,13 @@ function SiteEditor({ data, onChange }: { data: SiteContent['site']; onChange: (
       {fRow('Email', inp(data.email, v => u('email', v)))}
       {fRow('Domain', inp(data.domain, v => u('domain', v)))}
       {fRow('Logo URL', inp(data.logo, v => u('logo', v)))}
+      {fRow('Colour Theme',
+        <select className="f-input" value={data.theme ?? 't1'} onChange={e => onChange({ ...data, theme: e.target.value as 't1'|'t2'|'t3' })}>
+          <option value="t1">T1 — Default Green</option>
+          <option value="t2">T2 — Green &amp; Pink</option>
+          <option value="t3">T3 — Green &amp; Pink Tags</option>
+        </select>
+      )}
       {fRow('Page Hero BG Opacity',
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <input

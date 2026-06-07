@@ -426,7 +426,7 @@ function SiteEditor({ data, onChange }: { data: SiteContent['site']; onChange: (
   )
 }
 
-function HomeEditor({ data, onChange, adminSecret }: { data: SiteContent['home']; onChange: (v: SiteContent['home']) => void; adminSecret: string }) {
+function HomeEditor({ data, onChange, adminSecret, otherLangData, onOtherLangChange }: { data: SiteContent['home']; onChange: (v: SiteContent['home']) => void; adminSecret: string; otherLangData?: SiteContent['home']; onOtherLangChange?: (v: SiteContent['home']) => void }) {
   const u = <K extends keyof SiteContent['home']>(k: K, v: SiteContent['home'][K]) => onChange({ ...data, [k]: v })
 
   const trustText = data.trust.join('\n')
@@ -452,7 +452,7 @@ function HomeEditor({ data, onChange, adminSecret }: { data: SiteContent['home']
     <>
       <div className="a-card">
         <div className="a-card-title">Hero</div>
-        {fRow('Hero Image', <ImageUploader value={data.heroImg} onChange={v => u('heroImg', v)} adminSecret={adminSecret} />)}
+        {fRow('Hero Image', <ImageUploader value={data.heroImg} onChange={v => u('heroImg', v)} adminSecret={adminSecret} syncOtherLang={otherLangData ? (url => onOtherLangChange?.({ ...otherLangData, heroImg: url })) : undefined} />)}
         {fRow('Desktop BG Opacity',
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <input type="range" min="0" max="1" step="0.01"
@@ -550,26 +550,27 @@ function isStorageUrl(url: string) {
   return /\/storage\/v1\/object\/public\//.test(url)
 }
 
-function ImageUploader({ value, onChange, adminSecret }: {
+function ImageUploader({ value, onChange, adminSecret, syncOtherLang }: {
   value: string
   onChange: (url: string) => void
   adminSecret: string
+  syncOtherLang?: (url: string) => void
 }) {
   const [uploading, setUploading] = useState(false)
   const [uploadErr, setUploadErr] = useState('')
   const [urlInput, setUrlInput] = useState(value)
+  const [pendingForm, setPendingForm] = useState<FormData | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
-  // Sync local input when parent updates the value (e.g. after upload)
   useEffect(() => { setUrlInput(value) }, [value])
 
   const isExternalPendingImport = /^https?:\/\//i.test(urlInput) && !isStorageUrl(urlInput) && urlInput !== value
 
-  async function doUpload(form: FormData) {
-    // Automatically delete the old file if it lives in our storage
+  async function executeUpload(form: FormData) {
     if (value && isStorageUrl(value)) form.append('deleteUrl', value)
     setUploading(true)
     setUploadErr('')
+    setPendingForm(null)
     try {
       const res = await fetch('/api/upload', {
         method: 'POST',
@@ -577,28 +578,42 @@ function ImageUploader({ value, onChange, adminSecret }: {
         body: form,
       })
       const json = await res.json() as { url?: string; error?: string }
-      if (json.url) { onChange(json.url); setUrlInput(json.url) }
-      else setUploadErr(json.error ?? 'Upload failed')
+      if (json.url) {
+        onChange(json.url)
+        setUrlInput(json.url)
+        syncOtherLang?.(json.url)
+      } else {
+        setUploadErr(json.error ?? 'Upload failed')
+      }
     } catch {
       setUploadErr('Upload failed')
     }
     setUploading(false)
+    if (fileRef.current) fileRef.current.value = ''
   }
 
-  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+  function requestUpload(form: FormData) {
+    // If there's already an image, ask for confirmation first
+    if (value) {
+      setPendingForm(form)
+    } else {
+      void executeUpload(form)
+    }
+  }
+
+  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
     const form = new FormData()
     form.append('file', file)
-    await doUpload(form)
-    if (fileRef.current) fileRef.current.value = ''
+    requestUpload(form)
   }
 
-  async function handleImport() {
+  function handleImport() {
     if (!isExternalPendingImport) return
     const form = new FormData()
     form.append('importUrl', urlInput)
-    await doUpload(form)
+    requestUpload(form)
   }
 
   function handleUrlBlur() {
@@ -608,54 +623,87 @@ function ImageUploader({ value, onChange, adminSecret }: {
   const previewSrc = urlInput || value
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
-      {previewSrc && (
-        <img
-          src={previewSrc}
-          alt="Preview"
-          style={{ width: '100%', maxWidth: 280, height: 110, objectFit: 'cover', borderRadius: 6, border: '1.5px solid #e5e7eb', display: 'block' }}
-          onError={e => { e.currentTarget.style.display = 'none' }}
-          onLoad={e => { e.currentTarget.style.display = 'block' }}
-        />
+    <>
+      {/* Confirmation modal — shown before replacing an existing image */}
+      {pendingForm && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.55)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+          <div style={{ background: '#fff', borderRadius: 12, padding: '1.75rem', maxWidth: 420, width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
+            <h3 style={{ margin: '0 0 .625rem', fontSize: '1.05rem', fontWeight: 700, color: '#111' }}>Replace Image?</h3>
+            <p style={{ margin: '0 0 .875rem', fontSize: '.875rem', color: '#4b5563', lineHeight: 1.65 }}>
+              The current image will be <strong>permanently removed</strong> from storage and replaced with the new one.
+            </p>
+            <p style={{ margin: '0 0 1.375rem', fontSize: '.8125rem', color: '#dc2626', fontWeight: 600, lineHeight: 1.5 }}>
+              ⚠ This change applies to <strong>both the EN and CN sites</strong> simultaneously.
+            </p>
+            <div style={{ display: 'flex', gap: '.625rem' }}>
+              <button
+                onClick={() => void executeUpload(pendingForm)}
+                disabled={uploading}
+                style={{ flex: 1, padding: '.625rem', background: '#0d9488', color: '#fff', border: 'none', borderRadius: 8, fontSize: '.8125rem', fontWeight: 600, cursor: 'pointer' }}
+              >
+                {uploading ? 'Replacing…' : 'Confirm Replace'}
+              </button>
+              <button
+                onClick={() => { setPendingForm(null); if (fileRef.current) fileRef.current.value = '' }}
+                disabled={uploading}
+                style={{ flex: 1, padding: '.625rem', background: '#f3f4f6', color: '#374151', border: 'none', borderRadius: 8, fontSize: '.8125rem', fontWeight: 500, cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
-      <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-        <input
-          type="text"
-          className="f-input"
-          style={{ minWidth: 0, flex: 1 }}
-          value={urlInput}
-          onChange={e => setUrlInput(e.target.value)}
-          onBlur={handleUrlBlur}
-          placeholder="Paste URL or use Upload →"
-        />
-        {isExternalPendingImport && (
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
+        {previewSrc && (
+          <img
+            src={previewSrc}
+            alt="Preview"
+            style={{ width: '100%', maxWidth: 280, height: 110, objectFit: 'cover', borderRadius: 6, border: '1.5px solid #e5e7eb', display: 'block' }}
+            onError={e => { e.currentTarget.style.display = 'none' }}
+            onLoad={e => { e.currentTarget.style.display = 'block' }}
+          />
+        )}
+        <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <input
+            type="text"
+            className="f-input"
+            style={{ minWidth: 0, flex: 1 }}
+            value={urlInput}
+            onChange={e => setUrlInput(e.target.value)}
+            onBlur={handleUrlBlur}
+            placeholder="Paste URL or use Upload →"
+          />
+          {isExternalPendingImport && (
+            <button
+              type="button"
+              className="a-add-btn"
+              onClick={handleImport}
+              disabled={uploading}
+              style={{ whiteSpace: 'nowrap', flexShrink: 0, background: '#eff6ff', color: '#1d4ed8', borderColor: '#bfdbfe' }}
+            >
+              {uploading ? 'Importing…' : '↓ Import'}
+            </button>
+          )}
           <button
             type="button"
             className="a-add-btn"
-            onClick={handleImport}
+            onClick={() => fileRef.current?.click()}
             disabled={uploading}
-            style={{ whiteSpace: 'nowrap', flexShrink: 0, background: '#eff6ff', color: '#1d4ed8', borderColor: '#bfdbfe' }}
+            style={{ whiteSpace: 'nowrap', flexShrink: 0 }}
           >
-            {uploading ? 'Importing…' : '↓ Import'}
+            {uploading ? 'Uploading…' : '↑ Upload'}
           </button>
-        )}
-        <button
-          type="button"
-          className="a-add-btn"
-          onClick={() => fileRef.current?.click()}
-          disabled={uploading}
-          style={{ whiteSpace: 'nowrap', flexShrink: 0 }}
-        >
-          {uploading ? 'Uploading…' : '↑ Upload'}
-        </button>
+        </div>
+        {uploadErr && <span style={{ fontSize: '.75rem', color: '#ef4444' }}>{uploadErr}</span>}
+        <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFile} />
       </div>
-      {uploadErr && <span style={{ fontSize: '.75rem', color: '#ef4444' }}>{uploadErr}</span>}
-      <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFile} />
-    </div>
+    </>
   )
 }
 
-function ProgramsEditor({ data, onChange, adminSecret }: { data: SiteContent['programs']; onChange: (v: SiteContent['programs']) => void; adminSecret: string }) {
+function ProgramsEditor({ data, onChange, adminSecret, otherLangData, onOtherLangChange }: { data: SiteContent['programs']; onChange: (v: SiteContent['programs']) => void; adminSecret: string; otherLangData?: SiteContent['programs']; onOtherLangChange?: (v: SiteContent['programs']) => void }) {
   const u = <K extends keyof SiteContent['programs']>(k: K, v: SiteContent['programs'][K]) => onChange({ ...data, [k]: v })
   const [selectedIdx, setSelectedIdx] = useState(0)
 
@@ -764,7 +812,7 @@ function ProgramsEditor({ data, onChange, adminSecret }: { data: SiteContent['pr
               {fRow('Languages', inp(school.languages, v => updateSchool(idx, { languages: v }), { placeholder: 'e.g. English · Mandarin' }))}
               {fRow('Durations', inp(school.durations, v => updateSchool(idx, { durations: v }), { placeholder: 'e.g. 1–4 weeks' }))}
               {fRow('Price From (USD)', inp(school.priceFrom, v => updateSchool(idx, { priceFrom: v }), { placeholder: 'e.g. 2200' }))}
-              {fRow('Photo', <ImageUploader value={school.photo} onChange={v => updateSchool(idx, { photo: v })} adminSecret={adminSecret} />)}
+              {fRow('Photo', <ImageUploader value={school.photo} onChange={v => updateSchool(idx, { photo: v })} adminSecret={adminSecret} syncOtherLang={otherLangData?.schools[idx] ? (url => { const sc = otherLangData.schools.map((x, j) => j === idx ? { ...x, photo: url } : x); onOtherLangChange?.({ ...otherLangData, schools: sc }) }) : undefined} />)}
               {fRow('Description', inp(school.desc, v => updateSchool(idx, { desc: v }), { textarea: true, rows: 4 }))}
               {fRow('Feature Tags', inp(school.features.join(', '), v => updateSchool(idx, { features: v.split(',').map((x: string) => x.trim()).filter(Boolean) }), { placeholder: 'Comma-separated, e.g. English Support, City Centre' }))}
             </div>
@@ -881,7 +929,7 @@ function HowItWorksEditor({ data, onChange }: { data: SiteContent['howItWorks'];
   )
 }
 
-function AboutEditor({ data, onChange, adminSecret }: { data: SiteContent['about']; onChange: (v: SiteContent['about']) => void; adminSecret: string }) {
+function AboutEditor({ data, onChange, adminSecret, otherLangData, onOtherLangChange }: { data: SiteContent['about']; onChange: (v: SiteContent['about']) => void; adminSecret: string; otherLangData?: SiteContent['about']; onOtherLangChange?: (v: SiteContent['about']) => void }) {
   const u = <K extends keyof SiteContent['about']>(k: K, v: SiteContent['about'][K]) => onChange({ ...data, [k]: v })
 
   function updateVetting(i: number, k: keyof VettingItem, v: string) {
@@ -916,7 +964,7 @@ function AboutEditor({ data, onChange, adminSecret }: { data: SiteContent['about
         {fRow('Subtitle', inp(data.sub, v => u('sub', v), { textarea: true }))}
         {fRow('Mission', inp(data.mission, v => u('mission', v), { textarea: true, rows: 3 }))}
         {fRow('Story', inp(data.story, v => u('story', v), { textarea: true, rows: 3 }))}
-        {fRow('Mission BG Image', <ImageUploader value={data.missionBg} onChange={v => u('missionBg', v)} adminSecret={adminSecret} />)}
+        {fRow('Mission BG Image', <ImageUploader value={data.missionBg} onChange={v => u('missionBg', v)} adminSecret={adminSecret} syncOtherLang={otherLangData ? (url => onOtherLangChange?.({ ...otherLangData, missionBg: url })) : undefined} />)}
       </div>
       <div className="a-card">
         <div className="a-card-title">Vetting Section</div>
@@ -953,7 +1001,7 @@ function AboutEditor({ data, onChange, adminSecret }: { data: SiteContent['about
             {fRow('Initials', inp(m.initials, v => updateTeam(i, 'initials', v)))}
             {fRow('Quote', inp(m.quote, v => updateTeam(i, 'quote', v), { textarea: true }))}
             {fRow('Bio', inp(m.bio, v => updateTeam(i, 'bio', v), { textarea: true, rows: 3 }))}
-            {fRow('Photo', <ImageUploader value={m.photo ?? ''} onChange={v => updateTeam(i, 'photo', v)} adminSecret={adminSecret} />)}
+            {fRow('Photo', <ImageUploader value={m.photo ?? ''} onChange={v => updateTeam(i, 'photo', v)} adminSecret={adminSecret} syncOtherLang={otherLangData?.team[i] ? (url => { const t = otherLangData.team.map((x, j) => j === i ? { ...x, photo: url } : x); onOtherLangChange?.({ ...otherLangData, team: t }) }) : undefined} />)}
           </CollapsibleItem>
         ))}
         <button className="a-add-btn" onClick={addTeam}>+ Add Team Member</button>
@@ -1052,7 +1100,7 @@ function PartnerEditor({ data, onChange }: { data: SiteContent['partner']; onCha
   )
 }
 
-function BlogEditor({ data, onChange, adminSecret }: { data: SiteContent['blog']; onChange: (v: SiteContent['blog']) => void; adminSecret: string }) {
+function BlogEditor({ data, onChange, adminSecret, otherLangData, onOtherLangChange }: { data: SiteContent['blog']; onChange: (v: SiteContent['blog']) => void; adminSecret: string; otherLangData?: SiteContent['blog']; onOtherLangChange?: (v: SiteContent['blog']) => void }) {
   const u = <K extends keyof SiteContent['blog']>(k: K, v: SiteContent['blog'][K]) => onChange({ ...data, [k]: v })
 
   function updatePost(i: number, k: keyof BlogPost, v: string) {
@@ -1078,7 +1126,7 @@ function BlogEditor({ data, onChange, adminSecret }: { data: SiteContent['blog']
             {fRow('Title', inp(p.title, v => updatePost(i, 'title', v)))}
             {fRow('Excerpt', inp(p.excerpt, v => updatePost(i, 'excerpt', v), { textarea: true, rows: 3 }))}
             {fRow('Date', inp(p.date, v => updatePost(i, 'date', v)))}
-            {fRow('Image', <ImageUploader value={p.img} onChange={v => updatePost(i, 'img', v)} adminSecret={adminSecret} />)}
+            {fRow('Image', <ImageUploader value={p.img} onChange={v => updatePost(i, 'img', v)} adminSecret={adminSecret} syncOtherLang={otherLangData?.posts[i] ? (url => { const ps = otherLangData.posts.map((x, j) => j === i ? { ...x, img: url } : x); onOtherLangChange?.({ ...otherLangData, posts: ps }) }) : undefined} />)}
           </CollapsibleItem>
         ))}
         <button className="a-add-btn" onClick={addPost}>+ Add Post</button>
@@ -1330,6 +1378,13 @@ export default function AdminSectionPage({ params }: { params: Promise<{ section
     setData(prev => ({ ...prev, [key]: val }))
   }
 
+  // Other-language data — used to sync image fields across EN ↔ CN
+  const otherData = lang === 'en' ? zhData : enData
+  function updateOtherSection<K extends keyof SiteContent>(key: K, val: SiteContent[K]) {
+    if (lang === 'en') setZhData(prev => prev ? { ...prev, [key]: val } : prev)
+    else setEnData(prev => prev ? { ...prev, [key]: val } : prev)
+  }
+
   const saveLabel = lang === 'en' ? 'Save All — EN Site' : 'Save All — 繁體中文'
 
   return (
@@ -1406,10 +1461,10 @@ export default function AdminSectionPage({ params }: { params: Promise<{ section
                   <SiteEditor data={data.site} onChange={v => updateSection('site', v)} />
                 )}
                 {activeSection === 'home' && (
-                  <HomeEditor data={data.home} onChange={v => updateSection('home', v)} adminSecret={adminSecret || getCookie('tpe_admin_key')} />
+                  <HomeEditor data={data.home} onChange={v => updateSection('home', v)} adminSecret={adminSecret || getCookie('tpe_admin_key')} otherLangData={otherData?.home} onOtherLangChange={v => updateOtherSection('home', v)} />
                 )}
                 {activeSection === 'programs' && (
-                  <ProgramsEditor data={data.programs} onChange={v => updateSection('programs', v)} adminSecret={adminSecret || getCookie('tpe_admin_key')} />
+                  <ProgramsEditor data={data.programs} onChange={v => updateSection('programs', v)} adminSecret={adminSecret || getCookie('tpe_admin_key')} otherLangData={otherData?.programs} onOtherLangChange={v => updateOtherSection('programs', v)} />
                 )}
                 {activeSection === 'whyTaiwan' && (
                   <WhyTaiwanEditor data={data.whyTaiwan} onChange={v => updateSection('whyTaiwan', v)} />
@@ -1418,7 +1473,7 @@ export default function AdminSectionPage({ params }: { params: Promise<{ section
                   <HowItWorksEditor data={data.howItWorks} onChange={v => updateSection('howItWorks', v)} />
                 )}
                 {activeSection === 'about' && (
-                  <AboutEditor data={data.about} onChange={v => updateSection('about', v)} adminSecret={adminSecret || getCookie('tpe_admin_key')} />
+                  <AboutEditor data={data.about} onChange={v => updateSection('about', v)} adminSecret={adminSecret || getCookie('tpe_admin_key')} otherLangData={otherData?.about} onOtherLangChange={v => updateOtherSection('about', v)} />
                 )}
                 {activeSection === 'faq' && (
                   <FaqEditor data={data.faq} onChange={v => updateSection('faq', v)} />
@@ -1430,7 +1485,7 @@ export default function AdminSectionPage({ params }: { params: Promise<{ section
                   <PartnerEditor data={data.partner} onChange={v => updateSection('partner', v)} />
                 )}
                 {activeSection === 'blog' && (
-                  <BlogEditor data={data.blog} onChange={v => updateSection('blog', v)} adminSecret={adminSecret || getCookie('tpe_admin_key')} />
+                  <BlogEditor data={data.blog} onChange={v => updateSection('blog', v)} adminSecret={adminSecret || getCookie('tpe_admin_key')} otherLangData={otherData?.blog} onOtherLangChange={v => updateOtherSection('blog', v)} />
                 )}
               </>
             )}

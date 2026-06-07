@@ -278,10 +278,10 @@ footer{background:var(--ink);color:rgba(255,255,255,.7);padding:52px 0 30px}
   .hero{padding:40px 0 50px}
 }
 
-/* ── THEME: T2 — Green & Pink ─────────────────────────────────────────── */
-[data-theme="t2"] .hero{background:linear-gradient(135deg,#3A2640 0%,#8B3D6B 28%,var(--teal-dk) 62%,#5A8788 100%)}
-[data-theme="t2"] .hero::after{background:radial-gradient(circle,rgba(232,117,154,.2) 0%,transparent 68%)}
-[data-theme="t2"] .cta-band{background:linear-gradient(135deg,#3A2640 0%,#8B3D6B 42%,var(--teal-dk) 100%)}
+/* ── THEME: T2 — Green & Pink (intensity via --t2-pink-stop CSS var) ─── */
+[data-theme="t2"] .hero{background:linear-gradient(135deg,#2E4E50 0%,var(--t2-pink-stop,rgba(139,61,107,.3)) 30%,var(--teal-dk) 62%,#5A8788 100%)}
+[data-theme="t2"] .hero::after{background:radial-gradient(circle,rgba(232,117,154,.18) 0%,transparent 68%)}
+[data-theme="t2"] .cta-band{background:linear-gradient(135deg,#2E4E50 0%,var(--t2-pink-stop,rgba(139,61,107,.3)) 42%,var(--teal-dk) 100%)}
 [data-theme="t2"] .nav-cta{background:var(--pink)!important}
 [data-theme="t2"] .nav-cta:hover{background:var(--pink-dk)!important}
 [data-theme="t2"] .btn-primary{background:var(--pink)}
@@ -292,7 +292,16 @@ footer{background:var(--ink);color:rgba(255,255,255,.7);padding:52px 0 30px}
 [data-theme="t2"] .blog-tag{color:var(--pink)}
 [data-theme="t2"] .nav-logo{color:var(--pink-dk)}
 
-/* ── THEME: T3 — Green & Pink Tags ───────────────────────────────────── */
-[data-theme="t3"] .tag{background:var(--blush);color:var(--pink-dk)}
-[data-theme="t3"] .card-badge{background:var(--blush);color:var(--pink-dk)}
-[data-theme="t3"] .blog-tag{color:var(--pink)}
+/* ── THEME: T3 — per-element pink via data-t3 attribute ──────────────── */
+[data-t3~="navCta"] .nav-cta{background:var(--pink)!important}
+[data-t3~="navCta"] .nav-cta:hover{background:var(--pink-dk)!important}
+[data-t3~="btnPrimary"] .btn-primary{background:var(--pink)}
+[data-t3~="btnPrimary"] .btn-primary:hover{background:var(--pink-dk)}
+[data-t3~="tags"] .tag{background:var(--blush);color:var(--pink-dk)}
+[data-t3~="cardBadge"] .card-badge{background:var(--blush);color:var(--pink-dk)}
+[data-t3~="blogTag"] .blog-tag{color:var(--pink)}
+[data-t3~="statNumbers"] .stat-n{color:var(--pink-dk)}
+[data-t3~="trustItems"] .trust-check{background:rgba(232,117,154,.25)}
+[data-t3~="sectionLabel"] .section-label{color:var(--pink)}
+[data-t3~="ctaBand"] .cta-band{background:linear-gradient(135deg,#3A2640 0%,#8B3D6B 42%,var(--teal-dk) 100%)}
+[data-t3~="navLogo"] .nav-logo{color:var(--pink-dk)}

@@ -30,6 +30,12 @@ export interface SiteContent {
   site: {
     name: string; tagline: string; email: string; domain: string
     logo: string; defaultLang?: string; heroBgOpacity?: number; theme?: 't1' | 't2' | 't3'
+    t2PinkIntensity?: number
+    t3Elements?: {
+      navCta?: boolean; btnPrimary?: boolean; tags?: boolean; cardBadge?: boolean
+      blogTag?: boolean; statNumbers?: boolean; trustItems?: boolean
+      sectionLabel?: boolean; ctaBand?: boolean; navLogo?: boolean
+    }
   }
   nav: { links: NavLink[]; cta: CtaLink }
   home: {

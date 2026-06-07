@@ -41,8 +41,19 @@ export function LangProvider({ children }: { children: ReactNode }) {
   const refreshContent = useCallback(() => loadContent(lang), [lang, loadContent])
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', C.site.theme ?? 't1')
-  }, [C.site.theme])
+    const theme = C.site.theme ?? 't1'
+    document.documentElement.setAttribute('data-theme', theme)
+
+    // T2: dynamic pink intensity via CSS variable
+    const intensity = C.site.t2PinkIntensity ?? 30
+    document.documentElement.style.setProperty('--t2-pink-stop', `rgba(139,61,107,${(intensity / 100).toFixed(2)})`)
+
+    // T3: space-separated list of active elements as data attribute
+    const elems = C.site.t3Elements ?? {}
+    const active = (Object.keys(elems) as (keyof typeof elems)[]).filter(k => elems[k]).join(' ')
+    if (active) document.documentElement.setAttribute('data-t3', active)
+    else document.documentElement.removeAttribute('data-t3')
+  }, [C.site.theme, C.site.t2PinkIntensity, C.site.t3Elements])
 
   return <Ctx.Provider value={{ lang, C, setLang, refreshContent }}>{children}</Ctx.Provider>
 }

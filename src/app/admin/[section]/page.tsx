@@ -88,6 +88,13 @@ html,body{margin:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,'Seg
 /* Skeleton */
 .a-skeleton{height:300px;background:linear-gradient(90deg,#f0f4f8 25%,#e5e7eb 50%,#f0f4f8 75%);background-size:400% 100%;animation:shimmer 1.4s ease infinite;border-radius:10px}
 @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+/* Site settings two-col */
+.a-site-cols{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;align-items:start}
+@media(max-width:860px){.a-site-cols{grid-template-columns:1fr}}
+.a-check-list{display:flex;flex-direction:column;gap:.5rem;margin-top:.25rem}
+.a-check-item{display:flex;align-items:center;gap:.5rem;font-size:.8125rem;color:#374151;cursor:pointer}
+.a-check-item input{width:15px;height:15px;cursor:pointer;accent-color:#e8759a}
+.a-theme-hint{font-size:.75rem;color:#9ca3af;margin-top:.75rem;line-height:1.5}
 /* Reset modal */
 .a-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem}
 .a-modal{background:#fff;border-radius:12px;padding:2rem;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25)}
@@ -202,47 +209,113 @@ function CollapsibleItem({
 // Section editors
 // ---------------------------------------------------------------------------
 
+const T3_ELEMENTS: { key: keyof NonNullable<SiteContent['site']['t3Elements']>; label: string }[] = [
+  { key: 'navCta',      label: 'Apply Now button' },
+  { key: 'btnPrimary',  label: 'Primary buttons' },
+  { key: 'tags',        label: 'Feature tags' },
+  { key: 'cardBadge',   label: 'Card badges' },
+  { key: 'blogTag',     label: 'Blog tags' },
+  { key: 'statNumbers', label: 'Stats numbers' },
+  { key: 'trustItems',  label: 'Trust check items' },
+  { key: 'sectionLabel',label: 'Section labels' },
+  { key: 'ctaBand',     label: 'CTA band background' },
+  { key: 'navLogo',     label: 'Nav logo colour' },
+]
+
 function SiteEditor({ data, onChange }: { data: SiteContent['site']; onChange: (v: SiteContent['site']) => void }) {
   const u = (k: keyof SiteContent['site'], v: string) => onChange({ ...data, [k]: v })
   const opacity = data.heroBgOpacity ?? 0.10
+  const theme = data.theme ?? 't1'
+
+  function toggleT3(key: keyof NonNullable<SiteContent['site']['t3Elements']>, val: boolean) {
+    onChange({ ...data, t3Elements: { ...data.t3Elements, [key]: val } })
+  }
+
   return (
-    <div className="a-card">
-      <div className="a-card-title">Site Settings</div>
-      {fRow('Site Name', inp(data.name, v => u('name', v)))}
-      {fRow('Tagline', inp(data.tagline, v => u('tagline', v)))}
-      {fRow('Email', inp(data.email, v => u('email', v)))}
-      {fRow('Domain', inp(data.domain, v => u('domain', v)))}
-      {fRow('Logo URL', inp(data.logo, v => u('logo', v)))}
-      {fRow('Colour Theme',
-        <select className="f-input" value={data.theme ?? 't1'} onChange={e => onChange({ ...data, theme: e.target.value as 't1'|'t2'|'t3' })}>
-          <option value="t1">T1 — Default Green</option>
-          <option value="t2">T2 — Green &amp; Pink</option>
-          <option value="t3">T3 — Green &amp; Pink Tags</option>
-        </select>
-      )}
-      {fRow('Page Hero BG Opacity',
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <input
-            type="range" min="0" max="0.5" step="0.01"
-            value={opacity}
-            onChange={e => onChange({ ...data, heroBgOpacity: parseFloat(e.target.value) })}
-            style={{ flex: 1 }}
-          />
-          <span style={{ minWidth: 36, fontSize: '.875rem', color: '#374151', fontWeight: 600 }}>
-            {Math.round(opacity * 100)}%
-          </span>
-        </div>
-      )}
-      {fRow('Default Language',
-        <div className="f-radio-group">
-          {(['en', 'zh'] as const).map(l => (
-            <label key={l}>
-              <input type="radio" name="defaultLang" value={l} checked={(data.defaultLang ?? 'en') === l} onChange={() => u('defaultLang', l)} />
-              {l === 'en' ? 'English' : '繁體中文'}
-            </label>
-          ))}
-        </div>
-      )}
+    <div className="a-site-cols">
+      {/* Left: main settings */}
+      <div className="a-card">
+        <div className="a-card-title">Site Settings</div>
+        {fRow('Site Name', inp(data.name, v => u('name', v)))}
+        {fRow('Tagline', inp(data.tagline, v => u('tagline', v)))}
+        {fRow('Email', inp(data.email, v => u('email', v)))}
+        {fRow('Domain', inp(data.domain, v => u('domain', v)))}
+        {fRow('Logo URL', inp(data.logo, v => u('logo', v)))}
+        {fRow('Colour Theme',
+          <select className="f-input" value={theme} onChange={e => onChange({ ...data, theme: e.target.value as 't1'|'t2'|'t3' })}>
+            <option value="t1">T1 — Default Green</option>
+            <option value="t2">T2 — Green &amp; Pink</option>
+            <option value="t3">T3 — Green &amp; Pink (select elements)</option>
+          </select>
+        )}
+        {fRow('Page Hero BG Opacity',
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <input type="range" min="0" max="0.5" step="0.01"
+              value={opacity}
+              onChange={e => onChange({ ...data, heroBgOpacity: parseFloat(e.target.value) })}
+              style={{ flex: 1 }} />
+            <span style={{ minWidth: 36, fontSize: '.875rem', color: '#374151', fontWeight: 600 }}>{Math.round(opacity * 100)}%</span>
+          </div>
+        )}
+        {fRow('Default Language',
+          <div className="f-radio-group">
+            {(['en', 'zh'] as const).map(l => (
+              <label key={l}>
+                <input type="radio" name="defaultLang" value={l} checked={(data.defaultLang ?? 'en') === l} onChange={() => u('defaultLang', l)} />
+                {l === 'en' ? 'English' : '繁體中文'}
+              </label>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Right: theme-specific panel */}
+      <div>
+        {theme === 't1' && (
+          <div className="a-card">
+            <div className="a-card-title">T1 — Default Green</div>
+            <p className="a-theme-hint">Pure green theme — no additional settings needed.</p>
+          </div>
+        )}
+
+        {theme === 't2' && (
+          <div className="a-card">
+            <div className="a-card-title">T2 — Green &amp; Pink Settings</div>
+            {fRow('Pink Intensity',
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <input type="range" min="0" max="100" step="1"
+                  value={data.t2PinkIntensity ?? 30}
+                  onChange={e => onChange({ ...data, t2PinkIntensity: parseInt(e.target.value) })}
+                  style={{ flex: 1 }} />
+                <span style={{ minWidth: 36, fontSize: '.875rem', fontWeight: 600 }}>{data.t2PinkIntensity ?? 30}%</span>
+              </div>
+            )}
+            <p className="a-theme-hint">
+              Controls how much pink splashes into the hero &amp; CTA band gradients.<br />
+              0% = green only (like T1) · 30% = subtle splash · 100% = strong pink
+            </p>
+          </div>
+        )}
+
+        {theme === 't3' && (
+          <div className="a-card">
+            <div className="a-card-title">T3 — Select Pink Elements</div>
+            <p className="a-theme-hint" style={{ marginBottom: '.75rem' }}>Tick each element you want to turn pink:</p>
+            <div className="a-check-list">
+              {T3_ELEMENTS.map(({ key, label }) => (
+                <label key={key} className="a-check-item">
+                  <input
+                    type="checkbox"
+                    checked={!!(data.t3Elements?.[key])}
+                    onChange={e => toggleT3(key, e.target.checked)}
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -781,7 +854,7 @@ export default function AdminSectionPage({ params }: { params: Promise<{ section
   function applyPercentDefaults(d: SiteContent): SiteContent {
     return {
       ...d,
-      site: { ...d.site, heroBgOpacity: 0.10 },
+      site: { ...d.site, heroBgOpacity: 0.10, t2PinkIntensity: 30 },
       home: { ...d.home, heroImgOpacity: 0.95, heroImgMobileOpacity: 0.28, heroImgFade: 72 },
     }
   }

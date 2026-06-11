@@ -323,6 +323,7 @@ function SiteEditor({ data, onChange, adminSecret, otherLangData, onOtherLangCha
         t3Elements: v.t3Elements,
         heroBgOpacity: v.heroBgOpacity,
         logo: v.logo,
+        logoSize: v.logoSize,
         blogHidden: v.blogHidden,
         faqHidden: v.faqHidden,
         featuredProgramsHidden: v.featuredProgramsHidden,
@@ -344,6 +345,19 @@ function SiteEditor({ data, onChange, adminSecret, otherLangData, onOtherLangCha
         {fRow('Email', inp(data.email, v => handleChange({ ...data, email: v })))}
         {fRow('Domain', inp(data.domain, v => handleChange({ ...data, domain: v })))}
         {fRow('Logo', <ImageUploader value={data.logo} onChange={v => handleChange({ ...data, logo: v })} adminSecret={adminSecret} syncOtherLang={otherLangData ? (url => onOtherLangChange?.({ ...otherLangData, logo: url })) : undefined} />)}
+        {fRow('Logo Size',
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <input type="range" min="24" max="72" step="2"
+              value={data.logoSize ?? 68}
+              onChange={e => handleChange({ ...data, logoSize: parseInt(e.target.value) })}
+              style={{ flex: 1 }} />
+            <span style={{ minWidth: 36, fontSize: '.875rem', fontWeight: 600 }}>{data.logoSize ?? 68}px</span>
+            <button
+              onClick={() => handleChange({ ...data, logoSize: undefined })}
+              style={{ padding: '.25rem .5rem', fontSize: '.75rem', background: '#f3f4f6', color: '#6b7280', border: '1px solid #e5e7eb', borderRadius: 5, cursor: 'pointer' }}
+            >Reset</button>
+          </div>
+        )}
         {fRow('Colour Theme',
           <select className="f-input" value={theme} onChange={e => handleChange({ ...data, theme: e.target.value as 't1'|'t2'|'t3' })}>
             <option value="t1">T1 — Default Green</option>

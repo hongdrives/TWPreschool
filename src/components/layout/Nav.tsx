@@ -21,6 +21,7 @@ export default function Nav() {
   }
 
   const logo = C.site.logo
+  const logoSize = C.site.logoSize ?? 68
   const isImg = logo && (logo.startsWith('/') || logo.startsWith('http'))
 
   return (
@@ -28,9 +29,9 @@ export default function Nav() {
       <nav>
         <div className="nav-i">
           <div className="nav-logo" onClick={() => go('home')} style={{ cursor: 'pointer' }}>
-            <div className="nav-logo-icon" style={{ width: 68, height: 68, ...(isImg ? { background: 'transparent', borderRadius: 0 } : {}) }}>
+            <div className="nav-logo-icon" style={{ width: logoSize, height: logoSize, ...(isImg ? { background: 'transparent', borderRadius: 0 } : {}) }}>
               {isImg
-                ? <img src={logo} alt="logo" style={{ width: 68, height: 68, objectFit: 'contain' }} />
+                ? <img src={logo} alt="logo" style={{ width: logoSize, height: logoSize, objectFit: 'contain' }} />
                 : '🌿'}
             </div>
           </div>

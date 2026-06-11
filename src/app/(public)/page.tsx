@@ -49,8 +49,9 @@ export default function HomePage() {
           </div>
           <div className="hero-trust" style={h.trustPerRow ? {
             display: 'grid',
-            gridTemplateColumns: `repeat(${h.trustPerRow}, 1fr)`,
-            gap: '10px 20px',
+            gridTemplateColumns: `repeat(${h.trustPerRow}, max-content)`,
+            columnGap: '32px',
+            rowGap: '10px',
           } : {}}>
             {h.trust.map((t, i) => (
               <div key={i} className="trust-item">

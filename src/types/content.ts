@@ -34,6 +34,7 @@ export interface SiteContent {
     customGreen?: string
     t2PinkIntensity?: number
     t3PinkInject?: number
+    logoSize?: number
     blogHidden?: boolean
     faqHidden?: boolean
     featuredProgramsHidden?: boolean

@@ -29,7 +29,7 @@ export default function Nav() {
       <nav>
         <div className="nav-i">
           <div className="nav-logo" onClick={() => go('home')} style={{ cursor: 'pointer' }}>
-            <div className="nav-logo-icon" style={{ width: logoSize, height: logoSize, maxWidth: 'calc(var(--nav-h) - 8px)', maxHeight: 'calc(var(--nav-h) - 8px)', ...(isImg ? { background: 'transparent', borderRadius: 0 } : {}) }}>
+            <div className="nav-logo-icon" style={{ width: logoSize, height: logoSize, flexShrink: 0, ...(isImg ? { background: 'transparent', borderRadius: 0 } : {}) }}>
               {isImg
                 ? <img src={logo} alt="logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 : '🌿'}

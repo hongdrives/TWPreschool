@@ -7,17 +7,6 @@ export default function BlogPage() {
   const { C } = useLang()
   const b = C.blog
 
-  if (C.site.blogHidden) {
-    return (
-      <section className="ph">
-        <div className="wrap">
-          <h1>Coming Soon</h1>
-          <p style={{ marginTop: 8 }}>This page is not yet available. Please check back later.</p>
-        </div>
-      </section>
-    )
-  }
-
   return (
     <>
       <section className="ph">

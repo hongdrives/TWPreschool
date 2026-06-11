@@ -8,16 +8,6 @@ export default function FaqPage() {
   const f = C.faq
   const [openIdx, setOpenIdx] = useState<number | null>(null)
 
-  if (C.site.faqHidden) {
-    return (
-      <section className="ph">
-        <div className="wrap">
-          <h1>Coming Soon</h1>
-          <p style={{ marginTop: 8 }}>This page is not yet available. Please check back later.</p>
-        </div>
-      </section>
-    )
-  }
 
   function toggle(i: number) {
     setOpenIdx((prev) => (prev === i ? null : i))

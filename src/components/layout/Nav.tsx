@@ -37,8 +37,15 @@ export default function Nav() {
           </div>
 
           <div className="nav-links">
+            <button
+              onClick={() => go('home')}
+              className={isActive('home') ? 'active' : ''}
+              data-page="home"
+            >
+              Home
+            </button>
             {C.nav.links
-              .filter(l => !(l.page === 'blog' && C.site.blogHidden) && !(l.page === 'faq' && C.site.faqHidden))
+              .filter(l => l.page !== 'home' && !(l.page === 'blog' && C.site.blogHidden) && !(l.page === 'faq' && C.site.faqHidden))
               .map(l => (
               <button
                 key={l.page}
@@ -71,8 +78,9 @@ export default function Nav() {
       </nav>
 
       <div className={`mobile-menu${mobileOpen ? ' open' : ''}`}>
+        <button onClick={() => go('home')}>Home</button>
         {C.nav.links
-          .filter(l => !(l.page === 'blog' && C.site.blogHidden) && !(l.page === 'faq' && C.site.faqHidden))
+          .filter(l => l.page !== 'home' && !(l.page === 'blog' && C.site.blogHidden) && !(l.page === 'faq' && C.site.faqHidden))
           .map(l => (
           <button key={l.page} onClick={() => go(l.page)}>{l.label}</button>
         ))}

@@ -257,6 +257,18 @@ const T3_ELEMENTS: { key: keyof NonNullable<SiteContent['site']['t3Elements']>; 
   { key: 'ctaBand',         label: 'CTA Band — Background',            desc: 'Full-width call-to-action band at page bottoms — changes gradient to include pink' },
 ]
 
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false)
+  return (
+    <button
+      onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1800) }}
+      style={{ fontSize: '.7rem', padding: '.2rem .5rem', background: copied ? '#d1fae5' : '#f0fdf4', color: copied ? '#065f46' : '#166534', border: '1px solid #bbf7d0', borderRadius: 4, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all .2s', flexShrink: 0 }}
+    >
+      {copied ? '✓ Copied' : 'Copy URL'}
+    </button>
+  )
+}
+
 function ColorPicker({ value, defaultColor, onChange }: {
   value: string | undefined
   defaultColor: string
@@ -387,23 +399,33 @@ function SiteEditor({ data, onChange, adminSecret, otherLangData, onOtherLangCha
         )}
         <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: '.875rem', marginTop: '.25rem' }}>
           <div className="a-card-title" style={{ marginBottom: '.625rem' }}>Page Visibility</div>
-          <p className="a-theme-hint" style={{ marginBottom: '.75rem' }}>Toggling these syncs to both EN and CN sites automatically.</p>
+          <p className="a-theme-hint" style={{ marginBottom: '.75rem' }}>Hides the nav link only — page stays accessible via direct URL. Syncs to both EN and CN.</p>
           {([
-            { key: 'blogHidden', label: 'Hide Blog page', desc: 'Removes Blog from navigation and shows "Coming Soon" when visited' },
-            { key: 'faqHidden', label: 'Hide FAQ page', desc: 'Removes FAQ from navigation and shows "Coming Soon" when visited' },
-            { key: 'featuredProgramsHidden', label: 'Hide Featured Programs (Home)', desc: 'Hides the Featured Programs section on the Home page' },
-          ] as { key: 'blogHidden' | 'faqHidden' | 'featuredProgramsHidden'; label: string; desc: string }[]).map(({ key, label, desc }) => (
-            <label key={key} className="a-check-item">
-              <input
-                type="checkbox"
-                checked={!!data[key]}
-                onChange={e => handleChange({ ...data, [key]: e.target.checked })}
-              />
-              <div className="a-check-label">
-                <span>{label}</span>
-                <span className="a-check-desc">{desc}</span>
-              </div>
-            </label>
+            { key: 'blogHidden' as const, label: 'Hide Blog from nav', path: '/blog' },
+            { key: 'faqHidden' as const, label: 'Hide FAQ from nav', path: '/faq' },
+            { key: 'featuredProgramsHidden' as const, label: 'Hide Featured Programs (Home)', path: null },
+          ]).map(({ key, label, path }) => (
+            <div key={key}>
+              <label className="a-check-item">
+                <input
+                  type="checkbox"
+                  checked={!!data[key]}
+                  onChange={e => handleChange({ ...data, [key]: e.target.checked })}
+                />
+                <div className="a-check-label">
+                  <span>{label}</span>
+                  {path && <span className="a-check-desc">Page still accessible via direct URL</span>}
+                </div>
+              </label>
+              {path && data[key] && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '1.625rem', marginTop: '-2px', marginBottom: '4px' }}>
+                  <span style={{ fontSize: '.7rem', color: '#6b7280', fontFamily: 'monospace' }}>
+                    https://{data.domain}{path}
+                  </span>
+                  <CopyButton text={`https://${data.domain}${path}`} />
+                </div>
+              )}
+            </div>
           ))}
         </div>
       </div>

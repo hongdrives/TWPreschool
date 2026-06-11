@@ -42,7 +42,7 @@ export default function Nav() {
               className={isActive('home') ? 'active' : ''}
               data-page="home"
             >
-              Home
+              {lang === 'zh' ? '首頁' : 'Home'}
             </button>
             {C.nav.links
               .filter(l => l.page !== 'home' && !(l.page === 'blog' && C.site.blogHidden) && !(l.page === 'faq' && C.site.faqHidden))
@@ -78,7 +78,7 @@ export default function Nav() {
       </nav>
 
       <div className={`mobile-menu${mobileOpen ? ' open' : ''}`}>
-        <button onClick={() => go('home')}>Home</button>
+        <button onClick={() => go('home')}>{lang === 'zh' ? '首頁' : 'Home'}</button>
         {C.nav.links
           .filter(l => l.page !== 'home' && !(l.page === 'blog' && C.site.blogHidden) && !(l.page === 'faq' && C.site.faqHidden))
           .map(l => (

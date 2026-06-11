@@ -22,17 +22,16 @@ export default function Nav() {
 
   const logo = C.site.logo
   const logoSize = C.site.logoSize ?? 68
-  const navHeight = Math.max(80, logoSize + 12)
   const isImg = logo && (logo.startsWith('/') || logo.startsWith('http'))
 
   return (
     <>
-      <nav style={{ height: navHeight }}>
+      <nav>
         <div className="nav-i">
           <div className="nav-logo" onClick={() => go('home')} style={{ cursor: 'pointer' }}>
-            <div className="nav-logo-icon" style={{ width: logoSize, height: logoSize, ...(isImg ? { background: 'transparent', borderRadius: 0 } : {}) }}>
+            <div className="nav-logo-icon" style={{ width: logoSize, height: logoSize, maxWidth: 'calc(var(--nav-h) - 8px)', maxHeight: 'calc(var(--nav-h) - 8px)', ...(isImg ? { background: 'transparent', borderRadius: 0 } : {}) }}>
               {isImg
-                ? <img src={logo} alt="logo" style={{ width: logoSize, height: logoSize, objectFit: 'contain' }} />
+                ? <img src={logo} alt="logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 : '🌿'}
             </div>
           </div>
@@ -71,7 +70,7 @@ export default function Nav() {
         </div>
       </nav>
 
-      <div className={`mobile-menu${mobileOpen ? ' open' : ''}`} style={{ top: navHeight }}>
+      <div className={`mobile-menu${mobileOpen ? ' open' : ''}`}>
         {C.nav.links
           .filter(l => !(l.page === 'blog' && C.site.blogHidden) && !(l.page === 'faq' && C.site.faqHidden))
           .map(l => (

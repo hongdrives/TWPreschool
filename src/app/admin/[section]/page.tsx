@@ -347,7 +347,7 @@ function SiteEditor({ data, onChange, adminSecret, otherLangData, onOtherLangCha
         {fRow('Logo', <ImageUploader value={data.logo} onChange={v => handleChange({ ...data, logo: v })} adminSecret={adminSecret} syncOtherLang={otherLangData ? (url => onOtherLangChange?.({ ...otherLangData, logo: url })) : undefined} />)}
         {fRow('Logo Size',
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <input type="range" min="24" max="72" step="2"
+            <input type="range" min="24" max="120" step="2"
               value={data.logoSize ?? 68}
               onChange={e => handleChange({ ...data, logoSize: parseInt(e.target.value) })}
               style={{ flex: 1 }} />

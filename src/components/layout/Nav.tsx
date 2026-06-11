@@ -22,11 +22,12 @@ export default function Nav() {
 
   const logo = C.site.logo
   const logoSize = C.site.logoSize ?? 68
+  const navHeight = Math.max(80, logoSize + 12)
   const isImg = logo && (logo.startsWith('/') || logo.startsWith('http'))
 
   return (
     <>
-      <nav>
+      <nav style={{ height: navHeight }}>
         <div className="nav-i">
           <div className="nav-logo" onClick={() => go('home')} style={{ cursor: 'pointer' }}>
             <div className="nav-logo-icon" style={{ width: logoSize, height: logoSize, ...(isImg ? { background: 'transparent', borderRadius: 0 } : {}) }}>
@@ -70,7 +71,7 @@ export default function Nav() {
         </div>
       </nav>
 
-      <div className={`mobile-menu${mobileOpen ? ' open' : ''}`}>
+      <div className={`mobile-menu${mobileOpen ? ' open' : ''}`} style={{ top: navHeight }}>
         {C.nav.links
           .filter(l => !(l.page === 'blog' && C.site.blogHidden) && !(l.page === 'faq' && C.site.faqHidden))
           .map(l => (

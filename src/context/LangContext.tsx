@@ -85,6 +85,18 @@ export function LangProvider({ children }: { children: ReactNode }) {
     const intensity = C.site.t2PinkIntensity ?? 30
     document.documentElement.style.setProperty('--t2-pink-stop', `rgba(${rDk},${gDk},${bDk},${(intensity / 100).toFixed(2)})`)
 
+    // Favicon — sync to logo when it's a real image URL
+    const logo = C.site.logo
+    if (logo && (logo.startsWith('/') || logo.startsWith('http'))) {
+      let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]')
+      if (!link) {
+        link = document.createElement('link')
+        link.rel = 'icon'
+        document.head.appendChild(link)
+      }
+      link.href = logo
+    }
+
     // T3: space-separated list of active elements as data attribute
     const elems = C.site.t3Elements ?? {}
     const active = (Object.keys(elems) as (keyof typeof elems)[]).filter(k => elems[k]).join(' ')
@@ -96,7 +108,7 @@ export function LangProvider({ children }: { children: ReactNode }) {
     const ti = inject / 100
     document.documentElement.style.setProperty('--t3-pink-inject',
       `rgb(${Math.round(grDk+(rDk-grDk)*ti)},${Math.round(ggDk+(gDk-ggDk)*ti)},${Math.round(gbDk+(bDk-gbDk)*ti)})`)
-  }, [C.site.theme, C.site.customPink, C.site.customGreen, C.site.t2PinkIntensity, C.site.t3PinkInject, C.site.t3Elements])
+  }, [C.site.theme, C.site.customPink, C.site.customGreen, C.site.t2PinkIntensity, C.site.t3PinkInject, C.site.t3Elements, C.site.logo])
 
   return <Ctx.Provider value={{ lang, C, setLang, refreshContent }}>{children}</Ctx.Provider>
 }

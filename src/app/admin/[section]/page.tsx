@@ -300,13 +300,38 @@ function ColorPicker({ value, defaultColor, onChange }: {
   )
 }
 
-function SiteEditor({ data, onChange }: { data: SiteContent['site']; onChange: (v: SiteContent['site']) => void }) {
-  const u = (k: keyof SiteContent['site'], v: string) => onChange({ ...data, [k]: v })
+function SiteEditor({ data, onChange, adminSecret, otherLangData, onOtherLangChange }: {
+  data: SiteContent['site']
+  onChange: (v: SiteContent['site']) => void
+  adminSecret: string
+  otherLangData?: SiteContent['site']
+  onOtherLangChange?: (v: SiteContent['site']) => void
+}) {
   const opacity = data.heroBgOpacity ?? 0.10
   const theme = data.theme ?? 't1'
 
+  function handleChange(v: SiteContent['site']) {
+    onChange(v)
+    if (otherLangData && onOtherLangChange) {
+      onOtherLangChange({
+        ...otherLangData,
+        theme: v.theme,
+        customPink: v.customPink,
+        customGreen: v.customGreen,
+        t2PinkIntensity: v.t2PinkIntensity,
+        t3PinkInject: v.t3PinkInject,
+        t3Elements: v.t3Elements,
+        heroBgOpacity: v.heroBgOpacity,
+        logo: v.logo,
+        blogHidden: v.blogHidden,
+        faqHidden: v.faqHidden,
+        featuredProgramsHidden: v.featuredProgramsHidden,
+      })
+    }
+  }
+
   function toggleT3(key: keyof NonNullable<SiteContent['site']['t3Elements']>, val: boolean) {
-    onChange({ ...data, t3Elements: { ...data.t3Elements, [key]: val } })
+    handleChange({ ...data, t3Elements: { ...data.t3Elements, [key]: val } })
   }
 
   return (
@@ -314,13 +339,13 @@ function SiteEditor({ data, onChange }: { data: SiteContent['site']; onChange: (
       {/* Left: main settings */}
       <div className="a-card">
         <div className="a-card-title">Site Settings</div>
-        {fRow('Site Name', inp(data.name, v => u('name', v)))}
-        {fRow('Tagline', inp(data.tagline, v => u('tagline', v)))}
-        {fRow('Email', inp(data.email, v => u('email', v)))}
-        {fRow('Domain', inp(data.domain, v => u('domain', v)))}
-        {fRow('Logo URL', inp(data.logo, v => u('logo', v)))}
+        {fRow('Site Name', inp(data.name, v => handleChange({ ...data, name: v })))}
+        {fRow('Tagline', inp(data.tagline, v => handleChange({ ...data, tagline: v })))}
+        {fRow('Email', inp(data.email, v => handleChange({ ...data, email: v })))}
+        {fRow('Domain', inp(data.domain, v => handleChange({ ...data, domain: v })))}
+        {fRow('Logo', <ImageUploader value={data.logo} onChange={v => handleChange({ ...data, logo: v })} adminSecret={adminSecret} syncOtherLang={otherLangData ? (url => onOtherLangChange?.({ ...otherLangData, logo: url })) : undefined} />)}
         {fRow('Colour Theme',
-          <select className="f-input" value={theme} onChange={e => onChange({ ...data, theme: e.target.value as 't1'|'t2'|'t3' })}>
+          <select className="f-input" value={theme} onChange={e => handleChange({ ...data, theme: e.target.value as 't1'|'t2'|'t3' })}>
             <option value="t1">T1 — Default Green</option>
             <option value="t2">T2 — Green &amp; Pink</option>
             <option value="t3">T3 — Green &amp; Pink (select elements)</option>
@@ -330,22 +355,43 @@ function SiteEditor({ data, onChange }: { data: SiteContent['site']; onChange: (
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <input type="range" min="0" max="0.5" step="0.01"
               value={opacity}
-              onChange={e => onChange({ ...data, heroBgOpacity: parseFloat(e.target.value) })}
+              onChange={e => handleChange({ ...data, heroBgOpacity: parseFloat(e.target.value) })}
               style={{ flex: 1 }} />
             <span style={{ minWidth: 36, fontSize: '.875rem', color: '#374151', fontWeight: 600 }}>{Math.round(opacity * 100)}%</span>
           </div>
         )}
-        {fRow('Green Colour', <ColorPicker value={data.customGreen} defaultColor="#619394" onChange={v => onChange({ ...data, customGreen: v })} />)}
+        {fRow('Green Colour', <ColorPicker value={data.customGreen} defaultColor="#619394" onChange={v => handleChange({ ...data, customGreen: v })} />)}
         {fRow('Default Language',
           <div className="f-radio-group">
             {(['en', 'zh'] as const).map(l => (
               <label key={l}>
-                <input type="radio" name="defaultLang" value={l} checked={(data.defaultLang ?? 'en') === l} onChange={() => u('defaultLang', l)} />
+                <input type="radio" name="defaultLang" value={l} checked={(data.defaultLang ?? 'en') === l} onChange={() => handleChange({ ...data, defaultLang: l })} />
                 {l === 'en' ? 'English' : '繁體中文'}
               </label>
             ))}
           </div>
         )}
+        <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: '.875rem', marginTop: '.25rem' }}>
+          <div className="a-card-title" style={{ marginBottom: '.625rem' }}>Page Visibility</div>
+          <p className="a-theme-hint" style={{ marginBottom: '.75rem' }}>Toggling these syncs to both EN and CN sites automatically.</p>
+          {([
+            { key: 'blogHidden', label: 'Hide Blog page', desc: 'Removes Blog from navigation and shows "Coming Soon" when visited' },
+            { key: 'faqHidden', label: 'Hide FAQ page', desc: 'Removes FAQ from navigation and shows "Coming Soon" when visited' },
+            { key: 'featuredProgramsHidden', label: 'Hide Featured Programs (Home)', desc: 'Hides the Featured Programs section on the Home page' },
+          ] as { key: 'blogHidden' | 'faqHidden' | 'featuredProgramsHidden'; label: string; desc: string }[]).map(({ key, label, desc }) => (
+            <label key={key} className="a-check-item">
+              <input
+                type="checkbox"
+                checked={!!data[key]}
+                onChange={e => handleChange({ ...data, [key]: e.target.checked })}
+              />
+              <div className="a-check-label">
+                <span>{label}</span>
+                <span className="a-check-desc">{desc}</span>
+              </div>
+            </label>
+          ))}
+        </div>
       </div>
 
       {/* Right: theme-specific panel */}
@@ -360,12 +406,12 @@ function SiteEditor({ data, onChange }: { data: SiteContent['site']; onChange: (
         {theme === 't2' && (
           <div className="a-card">
             <div className="a-card-title">T2 — Green &amp; Pink Settings</div>
-            {fRow('Pink Colour', <ColorPicker value={data.customPink} defaultColor="#E8759A" onChange={v => onChange({ ...data, customPink: v })} />)}
+            {fRow('Pink Colour', <ColorPicker value={data.customPink} defaultColor="#E8759A" onChange={v => handleChange({ ...data, customPink: v })} />)}
             {fRow('Pink Intensity',
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <input type="range" min="0" max="100" step="1"
                   value={data.t2PinkIntensity ?? 30}
-                  onChange={e => onChange({ ...data, t2PinkIntensity: parseInt(e.target.value) })}
+                  onChange={e => handleChange({ ...data, t2PinkIntensity: parseInt(e.target.value) })}
                   style={{ flex: 1 }} />
                 <span style={{ minWidth: 36, fontSize: '.875rem', fontWeight: 600 }}>{data.t2PinkIntensity ?? 30}%</span>
               </div>
@@ -380,12 +426,12 @@ function SiteEditor({ data, onChange }: { data: SiteContent['site']; onChange: (
         {theme === 't3' && (
           <div className="a-card">
             <div className="a-card-title">T3 — Green &amp; Pink (select elements)</div>
-            {fRow('Pink Colour', <ColorPicker value={data.customPink} defaultColor="#E8759A" onChange={v => onChange({ ...data, customPink: v })} />)}
+            {fRow('Pink Colour', <ColorPicker value={data.customPink} defaultColor="#E8759A" onChange={v => handleChange({ ...data, customPink: v })} />)}
             {fRow('Pink Injection',
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <input type="range" min="0" max="100" step="1"
                   value={data.t3PinkInject ?? 0}
-                  onChange={e => onChange({ ...data, t3PinkInject: parseInt(e.target.value) })}
+                  onChange={e => handleChange({ ...data, t3PinkInject: parseInt(e.target.value) })}
                   style={{ flex: 1 }} />
                 <span style={{ minWidth: 36, fontSize: '.875rem', fontWeight: 600 }}>{data.t3PinkInject ?? 0}%</span>
               </div>
@@ -490,6 +536,20 @@ function HomeEditor({ data, onChange, adminSecret, otherLangData, onOtherLangCha
       <div className="a-card">
         <div className="a-card-title">Trust Items</div>
         {fRow('Trust lines', inp(trustText, setTrust, { textarea: true, rows: 4, placeholder: 'One item per line' }))}
+        {fRow('Items per row',
+          <div className="f-radio-group">
+            {([2, 3, 4] as const).map(n => (
+              <label key={n}>
+                <input type="radio" checked={(data.trustPerRow ?? 0) === n} onChange={() => onChange({ ...data, trustPerRow: n })} />
+                {n} per row
+              </label>
+            ))}
+            <label>
+              <input type="radio" checked={!data.trustPerRow} onChange={() => onChange({ ...data, trustPerRow: undefined })} />
+              Auto (flex)
+            </label>
+          </div>
+        )}
       </div>
       <div className="a-card">
         <div className="a-card-title">Stats</div>
@@ -568,7 +628,15 @@ function ImageUploader({ value, onChange, adminSecret, syncOtherLang }: {
         headers: { Authorization: `Bearer ${adminSecret}` },
         body: form,
       })
-      const json = await res.json() as { url?: string; error?: string }
+      let json: { url?: string; error?: string }
+      try {
+        json = await res.json() as { url?: string; error?: string }
+      } catch {
+        setUploadErr(`Server error (HTTP ${res.status}) — check Supabase Storage config`)
+        setUploading(false)
+        if (fileRef.current) fileRef.current.value = ''
+        return
+      }
       if (json.url) {
         onChange(json.url)
         setUrlInput(json.url)
@@ -577,7 +645,7 @@ function ImageUploader({ value, onChange, adminSecret, syncOtherLang }: {
         setUploadErr(json.error ?? 'Upload failed')
       }
     } catch {
-      setUploadErr('Upload failed')
+      setUploadErr('Network error — could not reach upload server')
     }
     setUploading(false)
     if (fileRef.current) fileRef.current.value = ''
@@ -1541,7 +1609,7 @@ export default function AdminSectionPage({ params }: { params: Promise<{ section
             {!loading && data && (
               <>
                 {activeSection === 'site' && (
-                  <SiteEditor data={data.site} onChange={v => updateSection('site', v)} />
+                  <SiteEditor data={data.site} onChange={v => updateSection('site', v)} adminSecret={adminSecret} otherLangData={otherData?.site} onOtherLangChange={v => updateOtherSection('site', v)} />
                 )}
                 {activeSection === 'home' && (
                   <HomeEditor data={data.home} onChange={v => updateSection('home', v)} adminSecret={adminSecret} otherLangData={otherData?.home} onOtherLangChange={v => updateOtherSection('home', v)} />

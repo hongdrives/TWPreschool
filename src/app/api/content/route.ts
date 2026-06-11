@@ -6,7 +6,7 @@ import type { Lang } from '@/types/content'
 export async function GET(req: NextRequest) {
   const lang = (req.nextUrl.searchParams.get('lang') ?? 'en') as Lang
   const content = await fetchContent(lang)
-  return NextResponse.json(content)
+  return NextResponse.json(content, { headers: { 'Cache-Control': 'no-store' } })
 }
 
 export async function POST(req: NextRequest) {

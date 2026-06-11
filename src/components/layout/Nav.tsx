@@ -28,19 +28,17 @@ export default function Nav() {
       <nav>
         <div className="nav-i">
           <div className="nav-logo" onClick={() => go('home')} style={{ cursor: 'pointer' }}>
-            <div className="nav-logo-icon" style={isImg ? { background: 'transparent', borderRadius: 0 } : {}}>
+            <div className="nav-logo-icon" style={{ width: 68, height: 68, ...(isImg ? { background: 'transparent', borderRadius: 0 } : {}) }}>
               {isImg
-                ? <img src={logo} alt="logo" style={{ width: 34, height: 34, objectFit: 'contain' }} />
+                ? <img src={logo} alt="logo" style={{ width: 68, height: 68, objectFit: 'contain' }} />
                 : '🌿'}
-            </div>
-            <div>
-              <span>{C.site.name}</span>
-              <small>{C.site.tagline}</small>
             </div>
           </div>
 
           <div className="nav-links">
-            {C.nav.links.map(l => (
+            {C.nav.links
+              .filter(l => !(l.page === 'blog' && C.site.blogHidden) && !(l.page === 'faq' && C.site.faqHidden))
+              .map(l => (
               <button
                 key={l.page}
                 onClick={() => go(l.page)}
@@ -72,7 +70,9 @@ export default function Nav() {
       </nav>
 
       <div className={`mobile-menu${mobileOpen ? ' open' : ''}`}>
-        {C.nav.links.map(l => (
+        {C.nav.links
+          .filter(l => !(l.page === 'blog' && C.site.blogHidden) && !(l.page === 'faq' && C.site.faqHidden))
+          .map(l => (
           <button key={l.page} onClick={() => go(l.page)}>{l.label}</button>
         ))}
         <button onClick={() => go(C.nav.cta.page)}>{C.nav.cta.label}</button>

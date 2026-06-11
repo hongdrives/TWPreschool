@@ -47,7 +47,11 @@ export default function HomePage() {
               {h.cta2}
             </button>
           </div>
-          <div className="hero-trust">
+          <div className="hero-trust" style={h.trustPerRow ? {
+            display: 'grid',
+            gridTemplateColumns: `repeat(${h.trustPerRow}, 1fr)`,
+            gap: '10px 20px',
+          } : {}}>
             {h.trust.map((t, i) => (
               <div key={i} className="trust-item">
                 <div className="trust-check">✓</div>
@@ -71,7 +75,7 @@ export default function HomePage() {
       </div>
 
       {/* ── FEATURED PROGRAMS ── */}
-      <section>
+      {!C.site.featuredProgramsHidden && <section>
         <div className="wrap">
           <div className="section-hd-row">
             <div>
@@ -132,7 +136,7 @@ export default function HomePage() {
             ))}
           </div>
         </div>
-      </section>
+      </section>}
 
       {/* ── HOW IT WORKS ── */}
       <section style={{ background: 'var(--light)' }}>
@@ -142,7 +146,7 @@ export default function HomePage() {
             <h2 className="section-title">{h.howTitle}</h2>
             <p className="section-sub" style={{ margin: '0 auto' }}>{h.howSub}</p>
           </div>
-          <div className="grid-4">
+          <div className="grid-3">
             {h.steps.map((s, i) => (
               <div key={i} className="step">
                 <div className="step-n">{String(i + 1).padStart(2, '0')}</div>

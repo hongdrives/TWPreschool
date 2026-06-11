@@ -37,6 +37,7 @@ export interface SiteContent {
     logoSize?: number
     blogHidden?: boolean
     faqHidden?: boolean
+    featuredProgramsHidden?: boolean
     t3Elements?: {
       navCta?: boolean; navLogo?: boolean; navLogoIcon?: boolean; navActiveLink?: boolean
       navPrograms?: boolean; navWhyTaiwan?: boolean; navHowItWorks?: boolean; navAbout?: boolean
@@ -54,7 +55,7 @@ export interface SiteContent {
   home: {
     heroImg: string; heroImgOpacity: number; heroImgMobile: boolean; heroImgMobileOpacity: number; heroImgFade: number
     badge: string; headline: string; sub: string; cta1: string; cta2: string
-    trust: string[]; trustPerRow?: number; featuredHidden?: boolean; stats: StatItem[]
+    trust: string[]; trustPerRow?: number; stats: StatItem[]
     featuredTitle: string; featuredSub: string
     howTitle: string; howSub: string; steps: StepItem[]
     ctaTitle: string; ctaSub: string; ctaBtn: string; ctaBtn2: string

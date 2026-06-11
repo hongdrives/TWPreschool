@@ -76,7 +76,7 @@ export default function HomePage() {
       </div>
 
       {/* ── FEATURED PROGRAMS ── */}
-      {!C.home.featuredHidden && <section>
+      {!C.site.featuredProgramsHidden && <section>
         <div className="wrap">
           <div className="section-hd-row">
             <div>

@@ -338,6 +338,7 @@ function SiteEditor({ data, onChange, adminSecret, otherLangData, onOtherLangCha
         logoSize: v.logoSize,
         blogHidden: v.blogHidden,
         faqHidden: v.faqHidden,
+        featuredProgramsHidden: v.featuredProgramsHidden,
       })
     }
   }
@@ -402,6 +403,7 @@ function SiteEditor({ data, onChange, adminSecret, otherLangData, onOtherLangCha
           {([
             { key: 'blogHidden' as const, label: 'Hide Blog from nav', path: '/blog' },
             { key: 'faqHidden' as const, label: 'Hide FAQ from nav', path: '/faq' },
+            { key: 'featuredProgramsHidden' as const, label: 'Hide Featured Programs section', path: null },
           ]).map(({ key, label, path }) => (
             <div key={key}>
               <label className="a-check-item">
@@ -602,20 +604,6 @@ function HomeEditor({ data, onChange, adminSecret, otherLangData, onOtherLangCha
       </div>
       <div className="a-card">
         <div className="a-card-title">Featured Section</div>
-        {fRow('Show Section',
-          <label className="a-check-item" style={{ paddingLeft: 0 }}>
-            <input
-              type="checkbox"
-              checked={!data.featuredHidden}
-              onChange={e => {
-                const val = !e.target.checked
-                onChange({ ...data, featuredHidden: val })
-                if (otherLangData) onOtherLangChange?.({ ...otherLangData, featuredHidden: val })
-              }}
-            />
-            <span style={{ fontSize: '.8125rem', color: '#374151' }}>Show Featured Programs on Home page</span>
-          </label>
-        )}
         {fRow('Featured Title', inp(data.featuredTitle, v => u('featuredTitle', v)))}
         {fRow('Featured Sub', inp(data.featuredSub, v => u('featuredSub', v)))}
       </div>
